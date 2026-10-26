@@ -1,0 +1,13 @@
+name = "prothailand-master-api"
+main = "worker.js"
+compatibility_date = "2024-01-01"
+
+# Custom domain route (optional: map to https://api.prothailand.net/*)
+# routes = [
+#   { pattern = "api.prothailand.net/*", zone_name = "prothailand.net" }
+# ]
+
+# Optional Cloudflare KV binding for persistent user storage
+# [[kv_namespaces]]
+# binding = "USERS_KV"
+# id = "<your-kv-namespace-id>"

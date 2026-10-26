@@ -1,0 +1,13 @@
+{
+  "name": "prothailand-master-api",
+  "version": "1.0.0",
+  "description": "ProThailand Master Authentication Server for LFS 0.6V",
+  "main": "worker.js",
+  "scripts": {
+    "deploy": "wrangler deploy",
+    "dev": "wrangler dev"
+  },
+  "devDependencies": {
+    "wrangler": "^3.100.0"
+  }
+}
