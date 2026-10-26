@@ -40,9 +40,12 @@ namespace ProThailand
 
         // LFS 0.6V Memory Offsets from BaseAddress
         public const int OFFSET_MASTER_SERVER = 0x1C890C; // m.lfspro.net (16 bytes)
-        public const int OFFSET_SKINS_SERVER  = 0x1C6CD4; // s.lfspro.net (16 bytes)
+        public const int OFFSET_SKINS_SERVER  = 0x1C6CD4; // skins.lfs.net -> redirect (16 bytes)
+        public const int OFFSET_HTTP_LFSNET   = 0x16FBE4; // lfs.net -> redirect (8 bytes)
+        public const int OFFSET_UPDATER       = 0x16FBD0; // updates.lfs.net -> redirect (16 bytes)
         public const int OFFSET_USERNAME      = 0x5B0AA4; // LFS username buffer (24 bytes)
         public const int OFFSET_PASSWORD      = 0x5B0A8C; // LFS password buffer (24 bytes)
+        public const int OFFSET_PROFILE_NAME  = 0x3B9CF4; // Active player profile name (24 bytes)
         public const int OFFSET_INGAME_NAME   = 0x229214; // In-game display name (24 bytes)
 
         public static bool InjectCredentials(Process proc, string username, string password, string masterHost = null)
@@ -68,7 +71,8 @@ namespace ProThailand
                     IntPtr written;
                     WriteProcessMemory(hProcess, IntPtr.Add(baseAddr, OFFSET_USERNAME), userBytes, userBytes.Length, out written);
 
-                    // Also set in-game player display name
+                    // Set active player profile name & in-game display name
+                    WriteProcessMemory(hProcess, IntPtr.Add(baseAddr, OFFSET_PROFILE_NAME), userBytes, userBytes.Length, out written);
                     WriteProcessMemory(hProcess, IntPtr.Add(baseAddr, OFFSET_INGAME_NAME), userBytes, userBytes.Length, out written);
                 }
 
@@ -82,15 +86,26 @@ namespace ProThailand
                     WriteProcessMemory(hProcess, IntPtr.Add(baseAddr, OFFSET_PASSWORD), passBytes, passBytes.Length, out written);
                 }
 
-                // 3. Write Master Server Host (if specified)
-                if (!string.IsNullOrEmpty(masterHost))
-                {
-                    byte[] hostBytes = new byte[16];
-                    byte[] raw = Encoding.ASCII.GetBytes(masterHost.Trim());
-                    Array.Copy(raw, hostBytes, Math.Min(raw.Length, 15));
-                    IntPtr written;
-                    WriteProcessMemory(hProcess, IntPtr.Add(baseAddr, OFFSET_MASTER_SERVER), hostBytes, hostBytes.Length, out written);
-                }
+                // 3. Redirect all official lfs.net domains away from official servers
+                string redirectTarget = string.IsNullOrEmpty(masterHost) ? "127.0.0.1" : masterHost.Trim();
+                byte[] hostBytes = new byte[16];
+                byte[] rawHost = Encoding.ASCII.GetBytes(redirectTarget);
+                Array.Copy(rawHost, hostBytes, Math.Min(rawHost.Length, 15));
+                IntPtr w;
+
+                // Master Server (m.lfspro.net)
+                WriteProcessMemory(hProcess, IntPtr.Add(baseAddr, OFFSET_MASTER_SERVER), hostBytes, hostBytes.Length, out w);
+
+                // HTTP host (lfs.net) -> 8 bytes max (e.g. "127.0.0.1")
+                byte[] shortHost = new byte[8];
+                Array.Copy(rawHost, shortHost, Math.Min(rawHost.Length, 7));
+                WriteProcessMemory(hProcess, IntPtr.Add(baseAddr, OFFSET_HTTP_LFSNET), shortHost, shortHost.Length, out w);
+
+                // Skins host (skins.lfs.net)
+                WriteProcessMemory(hProcess, IntPtr.Add(baseAddr, OFFSET_SKINS_SERVER), hostBytes, hostBytes.Length, out w);
+
+                // Auto-Updater host (updates.lfs.net)
+                WriteProcessMemory(hProcess, IntPtr.Add(baseAddr, OFFSET_UPDATER), hostBytes, hostBytes.Length, out w);
 
                 return true;
             }
