@@ -17,7 +17,7 @@ namespace ProThailand
     public static class LoginHandle
     {
         public const string DefaultLocalServer = "http://localhost:8080/api.php";
-        public const string DefaultRemoteServer = "https://api.prothailand.net/api.php";
+        public const string DefaultRemoteServer = "https://prothailand-master-api.fixflxw24.workers.dev/api.php";
 
         public static LoginResult DoLogin(string username, string password, string serverBaseUrl)
         {

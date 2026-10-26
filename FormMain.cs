@@ -67,7 +67,7 @@ namespace ProThailand
 
             rbWorker = new RadioButton
             {
-                Text = "Cloudflare Worker (https://prothailand-master-api.auttynakub1234.workers.dev/api.php)",
+                Text = "Cloudflare Worker (https://prothailand-master-api.fixflxw24.workers.dev/api.php)",
                 Location = new Point(20, 24),
                 AutoSize = true,
                 Checked = true,
@@ -103,7 +103,7 @@ namespace ProThailand
                 BackColor = Color.FromArgb(15, 23, 42),
                 ForeColor = Color.White,
                 BorderStyle = BorderStyle.FixedSingle,
-                Text = "https://prothailand-master-api.auttynakub1234.workers.dev/api.php"
+                Text = "https://prothailand-master-api.fixflxw24.workers.dev/api.php"
             };
             gbServer.Controls.Add(txtServerUrl);
             this.Controls.Add(gbServer);
@@ -223,7 +223,7 @@ namespace ProThailand
         private void ServerRadio_CheckedChanged(object sender, EventArgs e)
         {
             if (rbWorker.Checked)
-                txtServerUrl.Text = "https://prothailand-master-api.auttynakub1234.workers.dev/api.php";
+                txtServerUrl.Text = "https://prothailand-master-api.fixflxw24.workers.dev/api.php";
             else if (rbLocalhost.Checked)
                 txtServerUrl.Text = LoginHandle.DefaultLocalServer;
             else if (rbProThailand.Checked)
