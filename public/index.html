@@ -1,18 +1,1541 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="th" class="dark">
 <head>
     <meta charset="UTF-8">
-    <title>ProThailand Master API</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ProThailand — LFS 0.6V Master Authentication & Driver Portal</title>
+    <!-- Google Fonts: Russo One & Chakra Petch from UI/UX Pro Max -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=Russo+One&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
     <style>
-        body { font-family: sans-serif; background: #0f172a; color: #f8fafc; text-align: center; padding: 50px; }
-        .badge { display: inline-block; padding: 6px 14px; background: #22c55e; color: #fff; border-radius: 9999px; font-weight: bold; }
-        h1 { color: #38bdf8; }
-        code { background: #1e293b; padding: 4px 8px; border-radius: 4px; color: #fb923c; }
+        :root {
+            --bg-base: #0A0A16;
+            --bg-surface: #14142B;
+            --bg-elevated: #1E1C38;
+            --bg-input: #0D0D1E;
+            --border: #2E2A52;
+            --border-hover: #4C3F7A;
+            --border-glow: #7C3AED;
+            --primary: #7C3AED;
+            --primary-hover: #9061F9;
+            --primary-glow: rgba(124, 58, 237, 0.4);
+            --cyan: #38BDF8;
+            --cyan-glow: rgba(56, 189, 248, 0.35);
+            --rose: #F43F5E;
+            --rose-glow: rgba(244, 63, 94, 0.4);
+            --emerald: #10B981;
+            --emerald-glow: rgba(16, 185, 129, 0.3);
+            --amber: #F59E0B;
+            --text-main: #F8FAFC;
+            --text-muted: #94A3B8;
+            --radius-sm: 8px;
+            --radius-md: 12px;
+            --radius-lg: 16px;
+            --transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: var(--bg-base);
+            color: var(--text-main);
+            font-family: 'Chakra Petch', -apple-system, BlinkMacSystemFont, sans-serif;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            background-image: 
+                radial-gradient(circle at 10% 15%, rgba(124, 58, 237, 0.15) 0%, transparent 45%),
+                radial-gradient(circle at 90% 85%, rgba(244, 63, 94, 0.12) 0%, transparent 45%),
+                radial-gradient(circle at 50% 50%, rgba(56, 189, 248, 0.05) 0%, transparent 60%),
+                linear-gradient(to bottom, rgba(10, 10, 22, 0.94), rgba(10, 10, 22, 0.98));
+            background-attachment: fixed;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* Ambient Speed Lines & Grid Background Effect */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                linear-gradient(rgba(124, 58, 237, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(124, 58, 237, 0.03) 1px, transparent 1px);
+            background-size: 40px 40px;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        /* Top Navigation Header */
+        header {
+            position: sticky;
+            top: 0;
+            z-index: 50;
+            background: rgba(15, 15, 35, 0.75);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--border);
+        }
+
+        .header-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 14px 24px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            text-decoration: none;
+            color: inherit;
+        }
+
+        .brand-logo {
+            width: 44px;
+            height: 44px;
+            background: linear-gradient(135deg, var(--rose), var(--primary));
+            border-radius: var(--radius-md);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 0 20px var(--rose-glow);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .brand-logo svg {
+            width: 24px;
+            height: 24px;
+            color: #FFFFFF;
+        }
+
+        .brand-text {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .brand-title {
+            font-family: 'Russo One', sans-serif;
+            font-size: 22px;
+            letter-spacing: 1px;
+            background: linear-gradient(135deg, #FFFFFF 30%, var(--cyan) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            line-height: 1.1;
+        }
+
+        .brand-sub {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            color: var(--text-muted);
+            font-weight: 600;
+        }
+
+        .header-badges {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .badge-live {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 14px;
+            border-radius: 9999px;
+            font-size: 13px;
+            font-weight: 600;
+            background: rgba(16, 185, 129, 0.12);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            color: #34D399;
+        }
+
+        .pulse-dot {
+            width: 8px;
+            height: 8px;
+            background: var(--emerald);
+            border-radius: 50%;
+            box-shadow: 0 0 10px var(--emerald);
+            animation: pulse-ring 2s infinite cubic-bezier(0.4, 0, 0.6, 1);
+        }
+
+        @keyframes pulse-ring {
+            0% { transform: scale(0.9); opacity: 1; }
+            50% { transform: scale(1.3); opacity: 0.5; }
+            100% { transform: scale(0.9); opacity: 1; }
+        }
+
+        /* Main Content Container */
+        main {
+            position: relative;
+            z-index: 1;
+            flex: 1;
+            max-width: 980px;
+            width: 100%;
+            margin: 32px auto;
+            padding: 0 20px;
+        }
+
+        /* Hero Banner */
+        .hero {
+            text-align: center;
+            margin-bottom: 32px;
+        }
+
+        .hero-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 14px;
+            background: rgba(124, 58, 237, 0.15);
+            border: 1px solid rgba(124, 58, 237, 0.35);
+            border-radius: 9999px;
+            color: var(--cyan);
+            font-size: 13px;
+            font-weight: 600;
+            margin-bottom: 14px;
+            letter-spacing: 0.5px;
+        }
+
+        .hero h1 {
+            font-family: 'Russo One', sans-serif;
+            font-size: clamp(28px, 5vw, 42px);
+            line-height: 1.15;
+            margin-bottom: 12px;
+            background: linear-gradient(135deg, #FFFFFF 40%, var(--cyan) 80%, var(--primary-hover) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-transform: uppercase;
+        }
+
+        .hero p {
+            color: var(--text-muted);
+            font-size: 16px;
+            max-width: 650px;
+            margin: 0 auto;
+            line-height: 1.6;
+        }
+
+        /* Telemetry Stat Cards */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+            gap: 14px;
+            margin-bottom: 28px;
+        }
+
+        .stat-card {
+            background: rgba(20, 20, 43, 0.6);
+            backdrop-filter: blur(12px);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            padding: 16px;
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            transition: var(--transition);
+        }
+
+        .stat-card:hover {
+            border-color: var(--border-hover);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        .stat-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: var(--radius-sm);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .stat-icon.purple { background: rgba(124, 58, 237, 0.2); color: var(--primary-hover); }
+        .stat-icon.cyan { background: rgba(56, 189, 248, 0.2); color: var(--cyan); }
+        .stat-icon.rose { background: rgba(244, 63, 94, 0.2); color: var(--rose); }
+        .stat-icon.green { background: rgba(16, 185, 129, 0.2); color: var(--emerald); }
+
+        .stat-info {
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .stat-label {
+            font-size: 12px;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .stat-value {
+            font-family: 'Russo One', sans-serif;
+            font-size: 16px;
+            color: var(--text-main);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        /* Tab Navigation Bar */
+        .tab-bar {
+            display: flex;
+            background: rgba(30, 28, 56, 0.7);
+            backdrop-filter: blur(16px);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            padding: 6px;
+            gap: 6px;
+            margin-bottom: 24px;
+            overflow-x: auto;
+        }
+
+        .tab-btn {
+            flex: 1;
+            min-width: 170px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            padding: 12px 18px;
+            background: transparent;
+            border: none;
+            color: var(--text-muted);
+            font-family: 'Chakra Petch', sans-serif;
+            font-size: 15px;
+            font-weight: 600;
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            transition: var(--transition);
+            white-space: nowrap;
+        }
+
+        .tab-btn:hover {
+            color: var(--text-main);
+            background: rgba(124, 58, 237, 0.18);
+        }
+
+        .tab-btn:focus-visible {
+            outline: 2px solid var(--primary);
+            outline-offset: 2px;
+        }
+
+        .tab-btn.active {
+            background: linear-gradient(135deg, var(--primary), #6366F1);
+            color: #FFFFFF;
+            box-shadow: 0 4px 16px var(--primary-glow);
+        }
+
+        .tab-btn svg {
+            width: 18px;
+            height: 18px;
+            flex-shrink: 0;
+        }
+
+        /* Main Card Container */
+        .portal-card {
+            background: var(--bg-surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            padding: 32px;
+            box-shadow: 0 16px 40px rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(20px);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .portal-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, transparent, var(--border-glow), var(--cyan), var(--rose), transparent);
+        }
+
+        /* Form Styles */
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 18px;
+            margin-bottom: 20px;
+        }
+
+        @media (max-width: 680px) {
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group.full-width {
+            grid-column: 1 / -1;
+        }
+
+        label {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            color: #E2E8F0;
+        }
+
+        .field-label-desc {
+            font-size: 12px;
+            font-weight: normal;
+            color: var(--text-muted);
+        }
+
+        .input-container {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+
+        .input-icon-left {
+            position: absolute;
+            left: 14px;
+            color: var(--text-muted);
+            display: flex;
+            align-items: center;
+            pointer-events: none;
+        }
+
+        .input-icon-left svg {
+            width: 18px;
+            height: 18px;
+        }
+
+        input[type="text"], input[type="password"] {
+            width: 100%;
+            padding: 13px 16px 13px 44px;
+            background: var(--bg-input);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            color: #FFFFFF;
+            font-family: 'Chakra Petch', sans-serif;
+            font-size: 15px;
+            transition: var(--transition);
+            outline: none;
+        }
+
+        input[type="text"]:focus, input[type="password"]:focus {
+            border-color: var(--cyan);
+            box-shadow: 0 0 14px var(--cyan-glow);
+            background: #111126;
+        }
+
+        input.valid {
+            border-color: var(--emerald);
+        }
+
+        input.invalid {
+            border-color: var(--rose);
+        }
+
+        /* Password Show/Hide Toggle Button */
+        .toggle-password-btn {
+            position: absolute;
+            right: 12px;
+            background: transparent;
+            border: none;
+            color: var(--text-muted);
+            cursor: pointer;
+            padding: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 4px;
+            transition: var(--transition);
+        }
+
+        .toggle-password-btn:hover {
+            color: var(--cyan);
+        }
+
+        .toggle-password-btn svg {
+            width: 18px;
+            height: 18px;
+        }
+
+        /* Realtime Password Strength Meter */
+        .strength-meter-wrap {
+            margin-top: 8px;
+        }
+
+        .strength-meter-bar {
+            height: 5px;
+            background: #27273B;
+            border-radius: 9999px;
+            overflow: hidden;
+            display: flex;
+            gap: 3px;
+        }
+
+        .strength-segment {
+            flex: 1;
+            height: 100%;
+            background: transparent;
+            transition: var(--transition);
+        }
+
+        .strength-label-text {
+            font-size: 12px;
+            margin-top: 5px;
+            display: flex;
+            justify-content: space-between;
+            color: var(--text-muted);
+        }
+
+        /* Checkbox Custom Styling */
+        .terms-wrap {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            margin-bottom: 24px;
+            user-select: none;
+        }
+
+        .terms-wrap input[type="checkbox"] {
+            margin-top: 3px;
+            accent-color: var(--primary);
+            width: 17px;
+            height: 17px;
+            cursor: pointer;
+        }
+
+        .terms-label {
+            font-size: 13.5px;
+            color: var(--text-muted);
+            line-height: 1.4;
+            cursor: pointer;
+        }
+
+        .terms-label strong {
+            color: var(--cyan);
+        }
+
+        /* Submit Button */
+        .btn-submit {
+            width: 100%;
+            padding: 16px 24px;
+            background: linear-gradient(135deg, var(--rose), var(--primary));
+            border: none;
+            border-radius: var(--radius-sm);
+            color: #FFFFFF;
+            font-family: 'Russo One', sans-serif;
+            font-size: 17px;
+            letter-spacing: 0.8px;
+            cursor: pointer;
+            transition: var(--transition);
+            box-shadow: 0 6px 22px var(--rose-glow);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            text-transform: uppercase;
+        }
+
+        .btn-submit:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 28px rgba(244, 63, 94, 0.6);
+            background: linear-gradient(135deg, #ff4d6d, var(--primary-hover));
+        }
+
+        .btn-submit:disabled {
+            opacity: 0.65;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-submit svg {
+            width: 20px;
+            height: 20px;
+        }
+
+        /* Spinner Animation */
+        .spinner {
+            width: 18px;
+            height: 18px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-top-color: #FFFFFF;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Alert Banners */
+        .alert {
+            padding: 14px 18px;
+            border-radius: var(--radius-sm);
+            font-size: 14px;
+            margin-bottom: 22px;
+            display: none;
+            align-items: center;
+            gap: 12px;
+            animation: slideDown 0.3s ease;
+        }
+
+        @keyframes slideDown {
+            from { opacity: 0; transform: translateY(-8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .alert-success {
+            background: rgba(16, 185, 129, 0.15);
+            border: 1px solid rgba(16, 185, 129, 0.35);
+            color: #34D399;
+        }
+
+        .alert-error {
+            background: rgba(244, 63, 94, 0.15);
+            border: 1px solid rgba(244, 63, 94, 0.35);
+            color: #FB7185;
+        }
+
+        .alert svg {
+            width: 20px;
+            height: 20px;
+            flex-shrink: 0;
+        }
+
+        /* Tab Panels */
+        .tab-panel {
+            display: none;
+        }
+
+        .tab-panel.active {
+            display: block;
+            animation: fadeIn 0.35s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Search HWID Card Section */
+        .search-box-row {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .search-box-row .input-container {
+            flex: 1;
+        }
+
+        .btn-search {
+            padding: 0 24px;
+            background: var(--primary);
+            border: none;
+            border-radius: var(--radius-sm);
+            color: #fff;
+            font-family: 'Russo One', sans-serif;
+            font-size: 15px;
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-search:hover {
+            background: var(--primary-hover);
+            box-shadow: 0 4px 15px var(--primary-glow);
+        }
+
+        .user-result-card {
+            background: var(--bg-input);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .user-card-header {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            padding-bottom: 14px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .user-avatar {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--cyan), var(--primary));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Russo One', sans-serif;
+            font-size: 20px;
+            color: #fff;
+            box-shadow: 0 0 15px var(--cyan-glow);
+        }
+
+        .user-details-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 14px;
+            margin-top: 6px;
+        }
+
+        .detail-item {
+            background: rgba(255, 255, 255, 0.03);
+            padding: 10px 14px;
+            border-radius: var(--radius-sm);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .detail-label {
+            font-size: 11.5px;
+            color: var(--text-muted);
+            text-transform: uppercase;
+        }
+
+        .detail-value {
+            font-size: 14.5px;
+            font-weight: 600;
+            color: #FFFFFF;
+            margin-top: 3px;
+            word-break: break-all;
+        }
+
+        /* Download Section */
+        .download-hero {
+            background: linear-gradient(135deg, rgba(20, 20, 43, 0.8), rgba(30, 28, 56, 0.6));
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            padding: 28px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+            margin-bottom: 24px;
+        }
+
+        .download-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 12px;
+            border-radius: 9999px;
+            background: rgba(124, 58, 237, 0.2);
+            border: 1px solid var(--primary);
+            color: var(--primary-hover);
+            font-size: 12px;
+            font-weight: 700;
+            margin-bottom: 12px;
+            letter-spacing: 0.5px;
+        }
+
+        .btn-download-main {
+            display: inline-flex;
+            align-items: center;
+            gap: 12px;
+            padding: 16px 36px;
+            background: linear-gradient(135deg, var(--emerald), #059669);
+            color: #FFFFFF;
+            text-decoration: none;
+            border-radius: var(--radius-sm);
+            font-family: 'Russo One', sans-serif;
+            font-size: 17px;
+            letter-spacing: 0.5px;
+            box-shadow: 0 6px 25px var(--emerald-glow);
+            transition: var(--transition);
+            margin-top: 18px;
+        }
+
+        .btn-download-main:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 30px rgba(16, 185, 129, 0.6);
+        }
+
+        .btn-download-main svg {
+            width: 22px;
+            height: 22px;
+        }
+
+        /* Workflow Steps */
+        .workflow-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
+            margin-top: 24px;
+        }
+
+        @media (max-width: 768px) {
+            .workflow-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .workflow-card {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            padding: 18px;
+            position: relative;
+        }
+
+        .step-num {
+            font-family: 'Russo One', sans-serif;
+            font-size: 28px;
+            color: var(--primary-hover);
+            opacity: 0.4;
+            line-height: 1;
+            margin-bottom: 6px;
+        }
+
+        .step-title {
+            font-family: 'Russo One', sans-serif;
+            font-size: 15px;
+            margin-bottom: 6px;
+            color: #FFFFFF;
+        }
+
+        .step-desc {
+            font-size: 13px;
+            color: var(--text-muted);
+            line-height: 1.5;
+        }
+
+        /* Code Block & InSim Settings */
+        .code-snippet {
+            background: #090912;
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            padding: 14px 16px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 13px;
+            color: var(--cyan);
+            position: relative;
+            margin: 10px 0 16px 0;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .copy-btn {
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid var(--border);
+            color: var(--text-muted);
+            padding: 4px 10px;
+            border-radius: 4px;
+            font-size: 11px;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .copy-btn:hover {
+            color: #fff;
+            background: var(--primary);
+        }
+
+        /* Footer */
+        footer {
+            margin-top: auto;
+            border-top: 1px solid var(--border);
+            background: rgba(10, 10, 22, 0.8);
+            padding: 24px 20px;
+            text-align: center;
+            font-size: 13px;
+            color: var(--text-muted);
+        }
+
+        .footer-links {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 20px;
+            margin-top: 10px;
+        }
+
+        .footer-links a {
+            color: var(--text-muted);
+            text-decoration: none;
+            transition: var(--transition);
+        }
+
+        .footer-links a:hover {
+            color: var(--cyan);
+        }
     </style>
 </head>
 <body>
-    <h1>ProThailand Master Server</h1>
-    <p><span class="badge">ONLINE</span> Live for Speed 0.6V Master Authentication</p>
-    <p>API Endpoint: <code>/api.php</code></p>
+    <!-- HEADER -->
+    <header>
+        <div class="header-container">
+            <a href="/" class="brand">
+                <div class="brand-logo">
+                    <!-- High-tech Racing Flag / Shield SVG -->
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/>
+                        <line x1="4" y1="22" x2="4" y2="15"/>
+                    </svg>
+                </div>
+                <div class="brand-text">
+                    <span class="brand-title">PROTHAILAND</span>
+                    <span class="brand-sub">Esports Master Network</span>
+                </div>
+            </a>
+            <div class="header-badges">
+                <div class="badge-live">
+                    <span class="pulse-dot"></span>
+                    <span>MASTER API ONLINE</span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- MAIN BODY -->
+    <main>
+        <!-- Hero Title -->
+        <div class="hero">
+            <div class="hero-tag">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+                LIVE FOR SPEED 0.6V MASTER SERVER
+            </div>
+            <h1>ระบบยืนยันตัวตน & สมัครสมาชิกนักแข่ง</h1>
+            <p>ลงทะเบียนบัญชีนักแข่ง ยืนยันสิทธิ์อัตโนมัติ ผูกล็อคเครื่อง (HWID Binding) และเชื่อมต่อผ่านระบบเข้ารหัส AES-256 สำหรับ ProThailand Launcher</p>
+        </div>
+
+        <!-- Telemetry Stats Grid -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-icon purple">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                </div>
+                <div class="stat-info">
+                    <span class="stat-label">Security Scheme</span>
+                    <span class="stat-value">AES-256-CBC PBKDF2</span>
+                </div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-icon cyan">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polygon points="10 8 16 12 10 16 10 8"/></svg>
+                </div>
+                <div class="stat-info">
+                    <span class="stat-label">InSim Engine</span>
+                    <span class="stat-value">Port 29999 (Active)</span>
+                </div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-icon rose">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                </div>
+                <div class="stat-info">
+                    <span class="stat-label">Anti-Cheat Engine</span>
+                    <span class="stat-value">Hardware Fingerprint</span>
+                </div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-icon green">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+                </div>
+                <div class="stat-info">
+                    <span class="stat-label">Launcher Suite</span>
+                    <span class="stat-value">v1.0.0 (23 KB Native)</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Navigation Tabs -->
+        <div class="tab-bar" role="tablist">
+            <button class="tab-btn active" role="tab" aria-selected="true" onclick="switchTab('register')">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7.5" r="4"/><line x1="20" y1="8" x2="20" y2="14"/><line x1="23" y1="11" x2="17" y2="11"/></svg>
+                สมัครสมาชิกนักแข่ง
+            </button>
+            <button class="tab-btn" role="tab" aria-selected="false" onclick="switchTab('check')">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                ตรวจสอบสถานะ HWID
+            </button>
+            <button class="tab-btn" role="tab" aria-selected="false" onclick="switchTab('download')">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                ดาวน์โหลด Launcher
+            </button>
+            <button class="tab-btn" role="tab" aria-selected="false" onclick="switchTab('guide')">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                วิธีตั้งค่า & คำสั่งเกม
+            </button>
+        </div>
+
+        <!-- Portal Card Container -->
+        <div class="portal-card">
+            <!-- Global Feedback Notification Banner -->
+            <div id="alert-banner" class="alert" role="alert">
+                <svg id="alert-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+                <span id="alert-msg">ข้อความแจ้งเตือน</span>
+            </div>
+
+            <!-- TAB 1: REGISTRATION -->
+            <section id="tab-register" class="tab-panel active" aria-labelledby="tab-register">
+                <form id="reg-form" onsubmit="handleRegister(event)" novalidate>
+                    <div class="form-row">
+                        <!-- Username -->
+                        <div class="form-group">
+                            <label for="reg-username">
+                                <span>ชื่อผู้ใช้ (Username) *</span>
+                                <span class="field-label-desc">สำหรับล็อกอินใน Launcher</span>
+                            </label>
+                            <div class="input-container">
+                                <span class="input-icon-left">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                                </span>
+                                <input type="text" id="reg-username" required placeholder="เช่น SpeedDemon99" minlength="3" maxlength="20" autocomplete="username" oninput="validateUsername()">
+                            </div>
+                            <div id="username-hint" class="field-label-desc" style="margin-top:6px;">ภาษาอังกฤษและตัวเลข 3-20 ตัวอักษร (A-Z, 0-9, _)</div>
+                        </div>
+
+                        <!-- In-game Driver Tag -->
+                        <div class="form-group">
+                            <label for="reg-tag">
+                                <span>ฉายานักแข่ง / Driver Tag</span>
+                                <span class="field-label-desc">แสดงในเกม Live for Speed</span>
+                            </label>
+                            <div class="input-container">
+                                <span class="input-icon-left">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>
+                                </span>
+                                <input type="text" id="reg-tag" placeholder="เช่น [TH] Apex Hunter" maxlength="30">
+                            </div>
+                            <div class="field-label-desc" style="margin-top:6px;">เว้นว่างได้ หรือระบุสังกัดทีมแข่ง</div>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <!-- Password -->
+                        <div class="form-group">
+                            <label for="reg-password">
+                                <span>รหัสผ่าน (Password) *</span>
+                                <span class="field-label-desc">อย่างน้อย 6 ตัวอักษร</span>
+                            </label>
+                            <div class="input-container">
+                                <span class="input-icon-left">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                                </span>
+                                <input type="password" id="reg-password" required placeholder="••••••••" minlength="6" autocomplete="new-password" oninput="checkStrength()">
+                                <button type="button" class="toggle-password-btn" onclick="togglePass('reg-password', this)" title="เปิด/ปิด การแสดงรหัสผ่าน" aria-label="Toggle password visibility">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                                </button>
+                            </div>
+                            <!-- Live Strength Meter -->
+                            <div class="strength-meter-wrap">
+                                <div class="strength-meter-bar">
+                                    <div id="str-1" class="strength-segment"></div>
+                                    <div id="str-2" class="strength-segment"></div>
+                                    <div id="str-3" class="strength-segment"></div>
+                                    <div id="str-4" class="strength-segment"></div>
+                                </div>
+                                <div class="strength-label-text">
+                                    <span>ความปลอดภัยรหัสผ่าน:</span>
+                                    <span id="strength-text" style="font-weight:600;">ยังไม่ได้ระบุ</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Confirm Password -->
+                        <div class="form-group">
+                            <label for="reg-confirm">
+                                <span>ยืนยันรหัสผ่าน *</span>
+                                <span class="field-label-desc">กรอกให้ตรงกับช่องรหัสผ่าน</span>
+                            </label>
+                            <div class="input-container">
+                                <span class="input-icon-left">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+                                </span>
+                                <input type="password" id="reg-confirm" required placeholder="••••••••" minlength="6" autocomplete="new-password" oninput="validateConfirm()">
+                                <button type="button" class="toggle-password-btn" onclick="togglePass('reg-confirm', this)" title="เปิด/ปิด การแสดงรหัสผ่าน" aria-label="Toggle confirm password visibility">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                                </button>
+                            </div>
+                            <div id="confirm-hint" class="field-label-desc" style="margin-top:6px;">กรุณากรอกรหัสผ่านซ้ำอีกครั้ง</div>
+                        </div>
+                    </div>
+
+                    <!-- Terms & Anti-Cheat Consent -->
+                    <div class="terms-wrap">
+                        <input type="checkbox" id="reg-agree" required checked>
+                        <label for="reg-agree" class="terms-label">
+                            ข้าพเจ้ายอมรับข้อตกลงในการแข่งขัน และยินยอมให้ระบบ ProThailand Launcher เชื่อมโยงรหัสเครื่อง (<strong>HWID Fingerprint: MAC / Motherboard / BIOS UUID</strong>) ในการล็อกอินเพื่อป้องกันการทุจริตและการสวมสิทธิ์
+                        </label>
+                    </div>
+
+                    <!-- Submit Button -->
+                    <button type="submit" id="btn-submit-reg" class="btn-submit">
+                        <span id="btn-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7.5" r="4"/><polyline points="17 11 19 13 23 9"/></svg>
+                        </span>
+                        <span id="btn-text">ยืนยันการสมัครสมาชิกนักแข่ง</span>
+                    </button>
+                </form>
+            </section>
+
+            <!-- TAB 2: HWID & ACCOUNT LOOKUP -->
+            <section id="tab-check" class="tab-panel" aria-labelledby="tab-check">
+                <div class="form-group">
+                    <label for="chk-username">
+                        <span>ค้นหาบัญชีและสถานะอุปกรณ์ (HWID):</span>
+                        <span class="field-label-desc">ระบุ Username ของนักแข่ง</span>
+                    </label>
+                    <div class="search-box-row">
+                        <div class="input-container">
+                            <span class="input-icon-left">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                            </span>
+                            <input type="text" id="chk-username" placeholder="พิมพ์ชื่อผู้ใช้ เช่น SpeedDemon99..." onkeydown="if(event.key==='Enter') checkUserAccount()">
+                        </div>
+                        <button type="button" class="btn-search" onclick="checkUserAccount()">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                            ค้นหา
+                        </button>
+                    </div>
+                </div>
+
+                <div id="check-result-container" style="display:none;"></div>
+            </section>
+
+            <!-- TAB 3: DOWNLOAD LAUNCHER -->
+            <section id="tab-download" class="tab-panel" aria-labelledby="tab-download">
+                <div class="download-hero">
+                    <span class="download-pill">OFFICIAL RELEASE v1.0.0</span>
+                    <h2 style="font-family:'Russo One', sans-serif; font-size:26px; margin-bottom:8px; color:#FFFFFF;">PROTHAILAND LAUNCHER SUITE</h2>
+                    <p style="color:var(--text-muted); font-size:14.5px; max-width:650px; margin:0 auto; line-height:1.6;">
+                        ตัวเปิดเกมและระบบส่งข้อมูลฮาร์ดแวร์สำหรับ Live for Speed 0.6V ประสิทธิภาพสูง โค้ดคอมไพล์ภาษา C# เป็นเนทีฟ PE Executable น้ำหนักเบาเพียง 23 KB พร้อมระบบ DRS, InSim Sync และ Dyno Pull
+                    </p>
+
+                    <div style="margin-top:20px;">
+                        <a href="https://github.com/auttynakub1234/ProThailand-Launcher/releases/download/v1.0.0/ProThailand.exe" class="btn-download-main">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                            ดาวน์โหลด ProThailand.exe (23 KB)
+                        </a>
+                    </div>
+                    
+                    <div style="margin-top:14px; font-size:12px; color:var(--text-muted);">
+                        SHA-256 Verified Build | Direct Release from GitHub | Windows 7 / 10 / 11 Supported
+                    </div>
+                </div>
+
+                <!-- 3-Step Quick Start Workflow -->
+                <h3 style="font-family:'Russo One'; font-size:18px; margin-top:28px; margin-bottom:14px; color:#FFFFFF;">ขั้นตอนการเริ่มซิ่ง 3 ขั้นตอน</h3>
+                <div class="workflow-grid">
+                    <div class="workflow-card">
+                        <div class="step-num">01</div>
+                        <div class="step-title">สมัครสมาชิก</div>
+                        <div class="step-desc">ลงทะเบียนบัญชีของคุณในแท็บ "สมัครสมาชิกนักแข่ง" ด้านบนโดยใช้เวลาไม่ถึง 10 วินาที</div>
+                    </div>
+                    <div class="workflow-card">
+                        <div class="step-num">02</div>
+                        <div class="step-title">วางไฟล์ในโฟลเดอร์เกม</div>
+                        <div class="step-desc">นำไฟล์ <code>ProThailand.exe</code> ไปวางไว้ในโฟลเดอร์เดียวกับตัวเกม <code>LFS.exe</code></div>
+                    </div>
+                    <div class="workflow-card">
+                        <div class="step-num">03</div>
+                        <div class="step-title">ล็อกอิน & ลุยสนาม!</div>
+                        <div class="step-desc">เปิด Launcher กรอก Username/Password ระบบจะผูกล็อค HWID และเปิดเกม LFS ให้ทันที</div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- TAB 4: SETUP & IN-GAME COMMANDS GUIDE -->
+            <section id="tab-guide" class="tab-panel" aria-labelledby="tab-guide">
+                <h3 style="font-family:'Russo One'; font-size:18px; margin-bottom:12px; color:#FFFFFF;">การตั้งค่า InSim & เครือข่ายการแข่ง</h3>
+                <p style="color:var(--text-muted); font-size:14px; margin-bottom:16px;">
+                    Launcher จะเชื่อมต่อไปยัง Master Server เพื่อยืนยันลิขสิทธิ์และซิงค์ข้อมูลกับ Live for Speed ผ่านพอร์ต InSim:
+                </p>
+
+                <label style="font-size:13px; color:#E2E8F0;">ค่าคอนฟิก InSim Port ใน cfg.txt หรือคำสั่งคอนโซล:</label>
+                <div class="code-snippet">
+                    <span>/insim 29999</span>
+                    <button class="copy-btn" onclick="copySnippet('/insim 29999', this)">คัดลอก</button>
+                </div>
+
+                <label style="font-size:13px; color:#E2E8F0;">Master API Authentication Endpoint (HTTPS):</label>
+                <div class="code-snippet">
+                    <span id="api-endpoint-text">https://api.prothailand.net/api.php</span>
+                    <button class="copy-btn" onclick="copySnippet('https://api.prothailand.net/api.php', this)">คัดลอก</button>
+                </div>
+
+                <div style="margin-top:20px; background:rgba(255,255,255,0.02); border:1px solid var(--border); border-radius:var(--radius-sm); padding:16px;">
+                    <h4 style="font-family:'Russo One'; font-size:15px; margin-bottom:8px; color:var(--cyan);">ปุ่มลัดและฟังก์ชันพิเศษในเกม</h4>
+                    <ul style="padding-left:20px; font-size:13.5px; color:var(--text-muted); line-height:1.7;">
+                        <li><strong style="color:#FFFFFF;">ปุ่ม F:</strong> เปิด/ปิด ระบบลดแรงต้านอากาศพลศาสตร์ (DRS Mode)</li>
+                        <li><strong style="color:#FFFFFF;">ปุ่ม Ctrl + 1, 2, 3:</strong> สลับโปรไฟล์จูนเครื่องยนต์ Dyno Stage 1 / 2 / 3</li>
+                        <li><strong style="color:#FFFFFF;">Telemetry Sync:</strong> คำนวณความร้อนยางและอัตราสิ้นเปลืองน้ำมันแบบเรียลไทม์</li>
+                    </ul>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <!-- FOOTER -->
+    <footer>
+        <div style="font-family:'Russo One'; font-size:15px; color:#FFFFFF; margin-bottom:6px;">PROTHAILAND LIVE FOR SPEED 0.6V</div>
+        <div>ขับเคลื่อนด้วยระบบ Cloudflare Worker Edge & Master Authentication Server</div>
+        <div class="footer-links">
+            <a href="https://github.com/auttynakub1234/ProThailand-Launcher" target="_blank">
+                GitHub Repository
+            </a>
+            <span>&bull;</span>
+            <a href="https://github.com/auttynakub1234/ProThailand-Launcher/releases" target="_blank">
+                Release Binaries
+            </a>
+            <span>&bull;</span>
+            <a href="https://uupm.cc" target="_blank" style="color:var(--primary-hover);">
+                Designed with UI/UX Pro Max
+            </a>
+        </div>
+    </footer>
+
+    <!-- INTERACTIVE SCRIPTS -->
+    <script>
+        // Update API endpoint display dynamically to match current host
+        if (window.location.origin) {
+            const apiSpan = document.getElementById('api-endpoint-text');
+            if (apiSpan) {
+                apiSpan.innerText = window.location.origin + '/api.php';
+            }
+        }
+
+        // Tab Switching Engine
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('active');
+                btn.setAttribute('aria-selected', 'false');
+            });
+            document.querySelectorAll('.tab-panel').forEach(panel => {
+                panel.classList.remove('active');
+            });
+
+            const activeBtn = document.querySelector(`button[onclick*="'${tabId}'"]`);
+            if (activeBtn) {
+                activeBtn.classList.add('active');
+                activeBtn.setAttribute('aria-selected', 'true');
+            }
+
+            const activePanel = document.getElementById('tab-' + tabId);
+            if (activePanel) {
+                activePanel.classList.add('active');
+            }
+
+            hideAlert();
+        }
+
+        // Notification Alert Helper
+        function showAlert(msg, isSuccess = true) {
+            const banner = document.getElementById('alert-banner');
+            const icon = document.getElementById('alert-icon');
+            const text = document.getElementById('alert-msg');
+
+            banner.className = 'alert ' + (isSuccess ? 'alert-success' : 'alert-error');
+            text.innerText = msg;
+
+            if (isSuccess) {
+                icon.innerHTML = '<path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/>';
+            } else {
+                icon.innerHTML = '<circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>';
+            }
+
+            banner.style.display = 'flex';
+            banner.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+
+        function hideAlert() {
+            const banner = document.getElementById('alert-banner');
+            if (banner) banner.style.display = 'none';
+        }
+
+        // Password Show/Hide Toggle
+        function togglePass(inputId, btn) {
+            const input = document.getElementById(inputId);
+            if (!input) return;
+            const isPassword = input.type === 'password';
+            input.type = isPassword ? 'text' : 'password';
+
+            if (isPassword) {
+                // Eye Off Icon
+                btn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>';
+            } else {
+                // Eye Icon
+                btn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>';
+            }
+        }
+
+        // Username Live Validation
+        function validateUsername() {
+            const el = document.getElementById('reg-username');
+            const hint = document.getElementById('username-hint');
+            const val = el.value.trim();
+
+            if (val.length === 0) {
+                el.className = '';
+                hint.innerText = 'ภาษาอังกฤษและตัวเลข 3-20 ตัวอักษร (A-Z, 0-9, _)';
+                hint.style.color = 'var(--text-muted)';
+                return false;
+            }
+
+            const regex = /^[a-zA-Z0-9_]{3,20}$/;
+            if (regex.test(val)) {
+                el.className = 'valid';
+                hint.innerText = '✓ รูปแบบชื่อผู้ใช้ถูกต้องและพร้อมใช้งาน';
+                hint.style.color = '#34D399';
+                return true;
+            } else {
+                el.className = 'invalid';
+                hint.innerText = '✗ ต้องเป็นอักษรภาษาอังกฤษ ตัวเลข หรือ _ ความยาว 3-20 ตัวอักษร';
+                hint.style.color = '#FB7185';
+                return false;
+            }
+        }
+
+        // Password Strength Live Analysis
+        function checkStrength() {
+            const pass = document.getElementById('reg-password').value;
+            const s1 = document.getElementById('str-1');
+            const s2 = document.getElementById('str-2');
+            const s3 = document.getElementById('str-3');
+            const s4 = document.getElementById('str-4');
+            const txt = document.getElementById('strength-text');
+
+            // Reset
+            [s1, s2, s3, s4].forEach(s => s.style.backgroundColor = 'transparent');
+
+            if (!pass) {
+                txt.innerText = 'ยังไม่ได้ระบุ';
+                txt.style.color = 'var(--text-muted)';
+                validateConfirm();
+                return;
+            }
+
+            let score = 0;
+            if (pass.length >= 6) score++;
+            if (pass.length >= 10) score++;
+            if (/[0-9]/.test(pass) && /[a-zA-Z]/.test(pass)) score++;
+            if (/[^a-zA-Z0-9]/.test(pass)) score++;
+
+            if (score === 1) {
+                s1.style.backgroundColor = '#EF4444';
+                txt.innerText = 'อ่อน (แนะนำ 8 ตัวอักษรขึ้นไป)';
+                txt.style.color = '#EF4444';
+            } else if (score === 2) {
+                s1.style.backgroundColor = '#F59E0B';
+                s2.style.backgroundColor = '#F59E0B';
+                txt.innerText = 'ปานกลาง (ควรเพิ่มตัวเลขหรือสัญลักษณ์)';
+                txt.style.color = '#F59E0B';
+            } else if (score === 3) {
+                s1.style.backgroundColor = '#38BDF8';
+                s2.style.backgroundColor = '#38BDF8';
+                s3.style.backgroundColor = '#38BDF8';
+                txt.innerText = 'ปลอดภัย (ระดับแนะนำ)';
+                txt.style.color = '#38BDF8';
+            } else {
+                s1.style.backgroundColor = '#10B981';
+                s2.style.backgroundColor = '#10B981';
+                s3.style.backgroundColor = '#10B981';
+                s4.style.backgroundColor = '#10B981';
+                txt.innerText = 'แข็งแกร่งมากยอดเยี่ยม!';
+                txt.style.color = '#10B981';
+            }
+
+            validateConfirm();
+        }
+
+        // Live Password Confirm Validation
+        function validateConfirm() {
+            const pass = document.getElementById('reg-password').value;
+            const conf = document.getElementById('reg-confirm').value;
+            const confEl = document.getElementById('reg-confirm');
+            const hint = document.getElementById('confirm-hint');
+
+            if (!conf) {
+                confEl.className = '';
+                hint.innerText = 'กรุณากรอกรหัสผ่านซ้ำอีกครั้ง';
+                hint.style.color = 'var(--text-muted)';
+                return false;
+            }
+
+            if (pass === conf) {
+                confEl.className = 'valid';
+                hint.innerText = '✓ รหัสผ่านตรงกันสมบูรณ์';
+                hint.style.color = '#34D399';
+                return true;
+            } else {
+                confEl.className = 'invalid';
+                hint.innerText = '✗ รหัสผ่านไม่ตรงกัน!';
+                hint.style.color = '#FB7185';
+                return false;
+            }
+        }
+
+        // Handle Registration Submit
+        async function handleRegister(e) {
+            e.preventDefault();
+            const username = document.getElementById('reg-username').value.trim();
+            const tag = document.getElementById('reg-tag').value.trim();
+            const password = document.getElementById('reg-password').value;
+            const confirm = document.getElementById('reg-confirm').value;
+            const agree = document.getElementById('reg-agree').checked;
+
+            if (!agree) {
+                showAlert('กรุณายินยอมรับข้อตกลงและเงื่อนไข HWID ก่อนดำเนินการต่อ', false);
+                return;
+            }
+
+            if (!validateUsername()) {
+                showAlert('กรุณาระบุ Username ให้ถูกต้อง (ความยาว 3-20 ตัวอักษร)', false);
+                return;
+            }
+
+            if (password.length < 6) {
+                showAlert('รหัสผ่านต้องมีความยาวอย่างน้อย 6 ตัวอักษร', false);
+                return;
+            }
+
+            if (password !== confirm) {
+                showAlert('รหัสผ่านและการยืนยันรหัสผ่านไม่ตรงกัน', false);
+                return;
+            }
+
+            const btn = document.getElementById('btn-submit-reg');
+            const btnText = document.getElementById('btn-text');
+            const btnIcon = document.getElementById('btn-icon');
+
+            btn.disabled = true;
+            btnText.innerText = 'กำลังตรวจสอบและบันทึกข้อมูล...';
+            btnIcon.innerHTML = '<div class="spinner"></div>';
+
+            try {
+                const res = await fetch('/api/register', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username, password, tag })
+                });
+
+                const data = await res.json();
+                if (data.success) {
+                    showAlert('🎉 ' + data.message, true);
+                    document.getElementById('reg-form').reset();
+                    checkStrength();
+                    document.getElementById('reg-username').className = '';
+                    document.getElementById('reg-confirm').className = '';
+                } else {
+                    showAlert('❌ ' + (data.message || 'เกิดข้อผิดพลาดในการลงทะเบียน'), false);
+                }
+            } catch (err) {
+                showAlert('เกิดข้อผิดพลาดในการเชื่อมต่อเซิร์ฟเวอร์: ' + err.message, false);
+            } finally {
+                btn.disabled = false;
+                btnText.innerText = 'ยืนยันการสมัครสมาชิกนักแข่ง';
+                btnIcon.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7.5" r="4"/><polyline points="17 11 19 13 23 9"/></svg>';
+            }
+        }
+
+        // Search Account & HWID
+        async function checkUserAccount() {
+            const name = document.getElementById('chk-username').value.trim();
+            if (!name) {
+                showAlert('กรุณาระบุชื่อผู้ใช้ที่ต้องการตรวจสอบ', false);
+                return;
+            }
+
+            const container = document.getElementById('check-result-container');
+            container.style.display = 'block';
+            container.innerHTML = '<div style="text-align:center; padding:30px; color:var(--text-muted);"><div class="spinner" style="margin:0 auto 10px auto;"></div>กำลังค้นหาข้อมูลในระบบ...</div>';
+
+            try {
+                const res = await fetch('/api/user?name=' + encodeURIComponent(name));
+                const data = await res.json();
+
+                if (data.found) {
+                    hideAlert();
+                    const initial = (data.username || 'P')[0].toUpperCase();
+                    const dateFormatted = data.createdAt ? new Date(data.createdAt).toLocaleString('th-TH') : 'ไม่ระบุ';
+                    const hwidBadge = data.hwidBound 
+                        ? '<span style="color:#10B981; background:rgba(16,185,129,0.15); padding:4px 10px; border-radius:6px; font-weight:700;">🔒 ล็อคกับเครื่องเรียบร้อย (Bound)</span>'
+                        : '<span style="color:#F59E0B; background:rgba(245,158,11,0.15); padding:4px 10px; border-radius:6px; font-weight:700;">⏳ รอผูกเครื่อง (จะล็อคอัตโนมัติเมื่อล็อกอินใน Launcher ครั้งแรก)</span>';
+
+                    container.innerHTML = `
+                        <div class="user-result-card">
+                            <div class="user-card-header">
+                                <div class="user-avatar">${initial}</div>
+                                <div>
+                                    <div style="font-family:'Russo One'; font-size:20px; color:#FFFFFF;">${data.username}</div>
+                                    <div style="font-size:13px; color:var(--cyan); font-weight:600;">ฉายา: ${data.tag || 'ไม่ได้ระบุ'}</div>
+                                </div>
+                            </div>
+                            <div class="user-details-grid">
+                                <div class="detail-item">
+                                    <div class="detail-label">สถานะในระบบ</div>
+                                    <div class="detail-value" style="color:#34D399;">นักแข่งที่ได้รับอนุญาต (Verified)</div>
+                                </div>
+                                <div class="detail-item">
+                                    <div class="detail-label">วันที่ลงทะเบียน</div>
+                                    <div class="detail-value">${dateFormatted}</div>
+                                </div>
+                                <div class="detail-item" style="grid-column: 1 / -1;">
+                                    <div class="detail-label" style="margin-bottom:6px;">สถานะฮาร์ดแวร์ HWID Fingerprint</div>
+                                    <div>${hwidBadge}</div>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                } else {
+                    container.innerHTML = `
+                        <div style="text-align:center; padding:30px; background:rgba(244,63,94,0.1); border:1px solid rgba(244,63,94,0.3); border-radius:var(--radius-md); color:#FB7185;">
+                            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-bottom:8px;"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
+                            <div style="font-family:'Russo One'; font-size:18px;">ไม่พบบัญชี "${name}" ในระบบ</div>
+                            <div style="font-size:13px; margin-top:4px; color:var(--text-muted);">สามารถไปที่แท็บ "สมัครสมาชิกนักแข่ง" เพื่อลงทะเบียนใหม่ได้ทันที</div>
+                        </div>
+                    `;
+                }
+            } catch (err) {
+                container.innerHTML = `<div style="text-align:center; padding:20px; color:#FB7185;">เกิดข้อผิดพลาดในการเชื่อมต่อ: ${err.message}</div>`;
+            }
+        }
+
+        // Copy Snippet Helper
+        function copySnippet(text, btn) {
+            navigator.clipboard.writeText(text).then(() => {
+                const old = btn.innerText;
+                btn.innerText = 'คัดลอกแล้ว!';
+                btn.style.background = '#10B981';
+                btn.style.color = '#fff';
+                setTimeout(() => {
+                    btn.innerText = old;
+                    btn.style.background = '';
+                    btn.style.color = '';
+                }, 2000);
+            });
+        }
+    </script>
 </body>
 </html>

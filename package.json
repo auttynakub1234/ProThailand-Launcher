@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "description": "ProThailand Master Authentication Server for LFS 0.6V",
   "main": "worker.js",
+  "type": "module",
   "scripts": {
     "deploy": "wrangler deploy",
     "dev": "wrangler dev"
