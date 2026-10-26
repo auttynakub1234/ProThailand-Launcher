@@ -311,10 +311,14 @@ namespace ProThailand
                 return;
             }
 
+            string user = txtUsername.Text.Trim();
+            string pass = txtPassword.Text;
+
             Log("Starting LFS: " + lfsPath);
-            if (LFSManager.LaunchLfs(lfsPath))
+            Log(string.Format("Injecting Web Credentials -> User: '{0}', usemaster=yes", string.IsNullOrEmpty(user) ? "guest" : user));
+            if (LFSManager.LaunchLfs(lfsPath, user, pass, "127.0.0.1"))
             {
-                Log("[+] LFS.exe process launched successfully!");
+                Log("[+] LFS.exe process launched successfully with Web usemaster!");
             }
             else
             {
