@@ -34,6 +34,7 @@ namespace ProThailand
             this.BackColor = Color.FromArgb(24, 28, 36);
             this.ForeColor = Color.White;
             this.Font = new Font("Segoe UI", 9.5f, FontStyle.Regular);
+            this.FormClosing += (s, e) => LocalMasterBridge.Stop();
 
             // Title Banner
             Label lblTitle = new Label
@@ -217,6 +218,18 @@ namespace ProThailand
 
             Log("ProThailand Launcher initialized.");
             Log("Active endpoint: " + txtServerUrl.Text);
+
+            // Start Local Master Bridge connected to Web System
+            LocalMasterBridge.Start(txtServerUrl.Text);
+            if (LocalMasterBridge.IsRunning)
+            {
+                Log("[+] Master Bridge Active on port 29339 -> All LFS usemaster checks sync to Web Portal!");
+            }
+            else
+            {
+                Log("[!] Warning: Master Bridge port 29339 already bound or busy.");
+            }
+
             CheckLfsStatus();
         }
 

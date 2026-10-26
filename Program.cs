@@ -1,4 +1,5 @@
 using System;
+using System.Net;
 using System.Windows.Forms;
 
 namespace ProThailand
@@ -8,6 +9,9 @@ namespace ProThailand
         [STAThread]
         public static int Main(string[] args)
         {
+            // Ignore SSL certificate errors for self-signed or Mono compatibility
+            ServicePointManager.ServerCertificateValidationCallback = (sender, certificate, chain, sslPolicyErrors) => true;
+            ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
             // If arguments are provided for headless / CLI testing
             if (args != null && args.Length > 0)
             {
