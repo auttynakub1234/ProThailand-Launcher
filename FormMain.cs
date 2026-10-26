@@ -11,6 +11,7 @@ namespace ProThailand
         private TextBox txtPassword;
         private TextBox txtServerUrl;
         private RadioButton rbLocalhost;
+        private RadioButton rbWorker;
         private RadioButton rbProThailand;
         private Button btnLogin;
         private Button btnInspectHwid;
@@ -26,7 +27,7 @@ namespace ProThailand
         private void InitializeComponent()
         {
             this.Text = "ProThailand Launcher (LFS 0.6V)";
-            this.Size = new Size(680, 560);
+            this.Size = new Size(700, 600);
             this.StartPosition = FormStartPosition.CenterScreen;
             this.FormBorderStyle = FormBorderStyle.FixedDialog;
             this.MaximizeBox = false;
@@ -40,7 +41,7 @@ namespace ProThailand
                 Text = "PROTHAILAND LAUNCHER",
                 Font = new Font("Segoe UI", 16f, FontStyle.Bold),
                 ForeColor = Color.FromArgb(56, 189, 248),
-                Location = new Point(24, 20),
+                Location = new Point(24, 18),
                 AutoSize = true
             };
             this.Controls.Add(lblTitle);
@@ -50,7 +51,7 @@ namespace ProThailand
                 Text = "Live for Speed 0.6V Master Authentication & Hardware Verification",
                 Font = new Font("Segoe UI", 9f, FontStyle.Regular),
                 ForeColor = Color.FromArgb(148, 163, 184),
-                Location = new Point(26, 52),
+                Location = new Point(26, 50),
                 AutoSize = true
             };
             this.Controls.Add(lblSubtitle);
@@ -59,40 +60,50 @@ namespace ProThailand
             GroupBox gbServer = new GroupBox
             {
                 Text = " Master Server Endpoint ",
-                Location = new Point(24, 85),
-                Size = new Size(616, 100),
+                Location = new Point(24, 80),
+                Size = new Size(636, 125),
                 ForeColor = Color.FromArgb(203, 213, 225)
             };
+
+            rbWorker = new RadioButton
+            {
+                Text = "Cloudflare Worker (https://prothailand-master-api.auttynakub1234.workers.dev/api.php)",
+                Location = new Point(20, 24),
+                AutoSize = true,
+                Checked = true,
+                ForeColor = Color.FromArgb(251, 146, 60) // Orange/Cloudflare
+            };
+            rbWorker.CheckedChanged += ServerRadio_CheckedChanged;
+            gbServer.Controls.Add(rbWorker);
 
             rbLocalhost = new RadioButton
             {
                 Text = "Localhost Test Server (http://localhost:8080/api.php)",
-                Location = new Point(20, 26),
+                Location = new Point(20, 46),
                 AutoSize = true,
-                Checked = true,
-                ForeColor = Color.FromArgb(74, 222, 128)
+                ForeColor = Color.FromArgb(74, 222, 128) // Green
             };
             rbLocalhost.CheckedChanged += ServerRadio_CheckedChanged;
             gbServer.Controls.Add(rbLocalhost);
 
             rbProThailand = new RadioButton
             {
-                Text = "Production Master Server (https://api.prothailand.net/api.php)",
-                Location = new Point(20, 48),
+                Text = "Production Custom Domain (https://api.prothailand.net/api.php)",
+                Location = new Point(20, 68),
                 AutoSize = true,
-                ForeColor = Color.FromArgb(56, 189, 248)
+                ForeColor = Color.FromArgb(56, 189, 248) // Blue
             };
             rbProThailand.CheckedChanged += ServerRadio_CheckedChanged;
             gbServer.Controls.Add(rbProThailand);
 
             txtServerUrl = new TextBox
             {
-                Location = new Point(20, 70),
-                Size = new Size(576, 24),
+                Location = new Point(20, 92),
+                Size = new Size(596, 24),
                 BackColor = Color.FromArgb(15, 23, 42),
                 ForeColor = Color.White,
                 BorderStyle = BorderStyle.FixedSingle,
-                Text = LoginHandle.DefaultLocalServer
+                Text = "https://prothailand-master-api.auttynakub1234.workers.dev/api.php"
             };
             gbServer.Controls.Add(txtServerUrl);
             this.Controls.Add(gbServer);
@@ -101,8 +112,8 @@ namespace ProThailand
             GroupBox gbAuth = new GroupBox
             {
                 Text = " User Authentication ",
-                Location = new Point(24, 195),
-                Size = new Size(616, 110),
+                Location = new Point(24, 215),
+                Size = new Size(636, 110),
                 ForeColor = Color.FromArgb(203, 213, 225)
             };
 
@@ -112,7 +123,7 @@ namespace ProThailand
             txtUsername = new TextBox
             {
                 Location = new Point(100, 27),
-                Size = new Size(200, 24),
+                Size = new Size(210, 24),
                 BackColor = Color.FromArgb(15, 23, 42),
                 ForeColor = Color.White,
                 BorderStyle = BorderStyle.FixedSingle,
@@ -120,13 +131,13 @@ namespace ProThailand
             };
             gbAuth.Controls.Add(txtUsername);
 
-            Label lblPass = new Label { Text = "Password:", Location = new Point(320, 30), AutoSize = true };
+            Label lblPass = new Label { Text = "Password:", Location = new Point(330, 30), AutoSize = true };
             gbAuth.Controls.Add(lblPass);
 
             txtPassword = new TextBox
             {
-                Location = new Point(395, 27),
-                Size = new Size(201, 24),
+                Location = new Point(405, 27),
+                Size = new Size(211, 24),
                 BackColor = Color.FromArgb(15, 23, 42),
                 ForeColor = Color.White,
                 BorderStyle = BorderStyle.FixedSingle,
@@ -152,7 +163,7 @@ namespace ProThailand
             {
                 Text = "🚀 Login & Authenticate",
                 Location = new Point(230, 65),
-                Size = new Size(180, 32),
+                Size = new Size(185, 32),
                 BackColor = Color.FromArgb(14, 165, 233),
                 ForeColor = Color.White,
                 Font = new Font("Segoe UI", 9.5f, FontStyle.Bold),
@@ -165,8 +176,8 @@ namespace ProThailand
             btnLaunch = new Button
             {
                 Text = "🏁 Launch LFS.exe",
-                Location = new Point(420, 65),
-                Size = new Size(176, 32),
+                Location = new Point(425, 65),
+                Size = new Size(191, 32),
                 BackColor = Color.FromArgb(34, 197, 94),
                 ForeColor = Color.White,
                 Font = new Font("Segoe UI", 9.5f, FontStyle.Bold),
@@ -182,7 +193,7 @@ namespace ProThailand
             lblStatus = new Label
             {
                 Text = "Status: Ready for authentication.",
-                Location = new Point(26, 315),
+                Location = new Point(26, 335),
                 AutoSize = true,
                 Font = new Font("Segoe UI", 10f, FontStyle.Bold),
                 ForeColor = Color.FromArgb(203, 213, 225)
@@ -192,8 +203,8 @@ namespace ProThailand
             // Log Console
             txtLogs = new TextBox
             {
-                Location = new Point(24, 345),
-                Size = new Size(616, 155),
+                Location = new Point(24, 365),
+                Size = new Size(636, 175),
                 Multiline = true,
                 ReadOnly = true,
                 ScrollBars = ScrollBars.Vertical,
@@ -205,13 +216,15 @@ namespace ProThailand
             this.Controls.Add(txtLogs);
 
             Log("ProThailand Launcher initialized.");
-            Log("Target endpoint default: " + txtServerUrl.Text);
+            Log("Active endpoint: " + txtServerUrl.Text);
             CheckLfsStatus();
         }
 
         private void ServerRadio_CheckedChanged(object sender, EventArgs e)
         {
-            if (rbLocalhost.Checked)
+            if (rbWorker.Checked)
+                txtServerUrl.Text = "https://prothailand-master-api.auttynakub1234.workers.dev/api.php";
+            else if (rbLocalhost.Checked)
                 txtServerUrl.Text = LoginHandle.DefaultLocalServer;
             else if (rbProThailand.Checked)
                 txtServerUrl.Text = LoginHandle.DefaultRemoteServer;
