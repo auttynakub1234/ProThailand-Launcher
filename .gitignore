@@ -1,0 +1,12 @@
+# Build & Dependency Artifacts
+.wrangler/
+node_modules/
+*.tar.gz
+ProThailand-Client-Pack.zip
+ProThailand-Complete/
+ProThailand-Pack/
+github-repo/
+*.obj
+*.pdb
+bin/
+obj/

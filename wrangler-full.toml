@@ -1,0 +1,30 @@
+name = "prothailand-full-system"
+type = "javascript"
+account_id = "YOUR_ACCOUNT_ID"
+workers_dev = true
+route = "prothailand-master-api.fixflxw24.workers.dev"
+compatibility_date = "2024-01-01"
+
+[env.production]
+name = "prothailand-master-api"
+
+[vars]
+MASTER_PASSWORD = "config.sys.input=UTF8"
+
+[[kv_namespaces]]
+binding = "USERS_KV"
+id = "YOUR_KV_NAMESPACE_ID"
+preview_id = "YOUR_KV_PREVIEW_ID"
+
+[build]
+upload = { format = "service-worker" }
+
+[site]
+bucket = "./public"
+entry-point = "."
+
+# Deployment settings
+[deployment]
+environments = [
+  { name = "production", zone_id = "YOUR_ZONE_ID" }
+]

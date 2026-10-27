@@ -1,0 +1,11 @@
+name = "prothailand-master-api"
+main = "worker.js"
+compatibility_date = "2024-01-01"
+workers_dev = true
+
+[vars]
+MASTER_PASSWORD = "config.sys.input=UTF8"
+
+[[kv_namespaces]]
+binding = "USERS_KV"
+id = "6bb7e2601b674c8b89246831295a83ed"

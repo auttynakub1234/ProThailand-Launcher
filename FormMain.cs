@@ -29,14 +29,11 @@ namespace ProThailand
             this.Text = "ProThailand Launcher (LFS 0.6V)";
             this.Size = new Size(700, 600);
             this.StartPosition = FormStartPosition.CenterScreen;
-            this.FormBorderStyle = FormBorderStyle.FixedDialog;
-            this.MaximizeBox = false;
             this.BackColor = Color.FromArgb(24, 28, 36);
             this.ForeColor = Color.White;
-            this.Font = new Font("Segoe UI", 9.5f, FontStyle.Regular);
-            this.FormClosing += (s, e) => LocalMasterBridge.Stop();
+            this.Font = new Font("Segoe UI", 9.5f);
 
-            // Title Banner
+            // Title
             Label lblTitle = new Label
             {
                 Text = "PROTHAILAND LAUNCHER",
@@ -49,7 +46,7 @@ namespace ProThailand
 
             Label lblSubtitle = new Label
             {
-                Text = "Live for Speed 0.6V Master Authentication & Hardware Verification",
+                Text = "Live for Speed 0.6V - Web Authentication + Master Bridge",
                 Font = new Font("Segoe UI", 9f, FontStyle.Regular),
                 ForeColor = Color.FromArgb(148, 163, 184),
                 Location = new Point(26, 50),
@@ -57,190 +54,161 @@ namespace ProThailand
             };
             this.Controls.Add(lblSubtitle);
 
-            // Group: Server Target
+            // Server selection
             GroupBox gbServer = new GroupBox
             {
-                Text = " Master Server Endpoint ",
+                Text = " Web Authentication Server ",
                 Location = new Point(24, 80),
-                Size = new Size(636, 125),
+                Size = new Size(636, 100),
                 ForeColor = Color.FromArgb(203, 213, 225)
             };
 
             rbWorker = new RadioButton
             {
-                Text = "Cloudflare Worker (https://prothailand-master-api.fixflxw24.workers.dev/api.php)",
+                Text = "Cloudflare Worker (prothailand-master-api.fixflxw24.workers.dev)",
                 Location = new Point(20, 24),
                 AutoSize = true,
                 Checked = true,
-                ForeColor = Color.FromArgb(251, 146, 60) // Orange/Cloudflare
+                ForeColor = Color.FromArgb(251, 146, 60)
             };
-            rbWorker.CheckedChanged += ServerRadio_CheckedChanged;
             gbServer.Controls.Add(rbWorker);
 
             rbLocalhost = new RadioButton
             {
-                Text = "Localhost Test Server (http://localhost:8080/api.php)",
-                Location = new Point(20, 46),
+                Text = "Localhost Test Server (localhost:8080)",
+                Location = new Point(20, 48),
                 AutoSize = true,
-                ForeColor = Color.FromArgb(74, 222, 128) // Green
+                ForeColor = Color.FromArgb(74, 222, 128)
             };
-            rbLocalhost.CheckedChanged += ServerRadio_CheckedChanged;
             gbServer.Controls.Add(rbLocalhost);
 
             rbProThailand = new RadioButton
             {
-                Text = "Production Custom Domain (https://api.prothailand.net/api.php)",
-                Location = new Point(20, 68),
+                Text = "Production (prothailand.net)",
+                Location = new Point(20, 72),
                 AutoSize = true,
-                ForeColor = Color.FromArgb(56, 189, 248) // Blue
+                ForeColor = Color.FromArgb(56, 189, 248)
             };
-            rbProThailand.CheckedChanged += ServerRadio_CheckedChanged;
             gbServer.Controls.Add(rbProThailand);
 
-            txtServerUrl = new TextBox
-            {
-                Location = new Point(20, 92),
-                Size = new Size(596, 24),
-                BackColor = Color.FromArgb(15, 23, 42),
-                ForeColor = Color.White,
-                BorderStyle = BorderStyle.FixedSingle,
-                Text = "https://prothailand-master-api.fixflxw24.workers.dev/api.php"
-            };
-            gbServer.Controls.Add(txtServerUrl);
             this.Controls.Add(gbServer);
 
-            // Group: Login Credentials
-            GroupBox gbAuth = new GroupBox
+            // Username
+            Label lblUser = new Label
             {
-                Text = " User Authentication ",
-                Location = new Point(24, 215),
-                Size = new Size(636, 110),
-                ForeColor = Color.FromArgb(203, 213, 225)
+                Text = "Username:",
+                Location = new Point(24, 190),
+                AutoSize = true
             };
-
-            Label lblUser = new Label { Text = "Username:", Location = new Point(20, 30), AutoSize = true };
-            gbAuth.Controls.Add(lblUser);
+            this.Controls.Add(lblUser);
 
             txtUsername = new TextBox
             {
-                Location = new Point(100, 27),
-                Size = new Size(210, 24),
+                Location = new Point(100, 187),
+                Size = new Size(200, 24),
                 BackColor = Color.FromArgb(15, 23, 42),
                 ForeColor = Color.White,
                 BorderStyle = BorderStyle.FixedSingle,
                 Text = "Pilot01"
             };
-            gbAuth.Controls.Add(txtUsername);
+            this.Controls.Add(txtUsername);
 
-            Label lblPass = new Label { Text = "Password:", Location = new Point(330, 30), AutoSize = true };
-            gbAuth.Controls.Add(lblPass);
+            // Password
+            Label lblPass = new Label
+            {
+                Text = "Password:",
+                Location = new Point(320, 190),
+                AutoSize = true
+            };
+            this.Controls.Add(lblPass);
 
             txtPassword = new TextBox
             {
-                Location = new Point(405, 27),
-                Size = new Size(211, 24),
+                Location = new Point(400, 187),
+                Size = new Size(200, 24),
                 BackColor = Color.FromArgb(15, 23, 42),
                 ForeColor = Color.White,
                 BorderStyle = BorderStyle.FixedSingle,
-                PasswordChar = '•',
+                PasswordChar = '*',
                 Text = "123456"
             };
-            gbAuth.Controls.Add(txtPassword);
+            this.Controls.Add(txtPassword);
 
+            // Buttons
             btnInspectHwid = new Button
             {
-                Text = "🔍 Inspect HWID Fingerprint",
-                Location = new Point(20, 65),
-                Size = new Size(200, 32),
-                BackColor = Color.FromArgb(51, 65, 85),
+                Text = "🔍 Inspect HWID",
+                Location = new Point(24, 230),
+                Size = new Size(180, 35),
+                BackColor = Color.FromArgb(59, 130, 246),
                 ForeColor = Color.White,
                 FlatStyle = FlatStyle.Flat
             };
-            btnInspectHwid.FlatAppearance.BorderSize = 0;
             btnInspectHwid.Click += BtnInspectHwid_Click;
-            gbAuth.Controls.Add(btnInspectHwid);
+            this.Controls.Add(btnInspectHwid);
 
             btnLogin = new Button
             {
-                Text = "🚀 Login & Authenticate",
-                Location = new Point(230, 65),
-                Size = new Size(185, 32),
-                BackColor = Color.FromArgb(14, 165, 233),
+                Text = "🚀 Login & Start Bridge",
+                Location = new Point(220, 230),
+                Size = new Size(200, 35),
+                BackColor = Color.FromArgb(16, 185, 129),
                 ForeColor = Color.White,
-                Font = new Font("Segoe UI", 9.5f, FontStyle.Bold),
                 FlatStyle = FlatStyle.Flat
             };
-            btnLogin.FlatAppearance.BorderSize = 0;
             btnLogin.Click += BtnLogin_Click;
-            gbAuth.Controls.Add(btnLogin);
+            this.Controls.Add(btnLogin);
 
             btnLaunch = new Button
             {
                 Text = "🏁 Launch LFS.exe",
-                Location = new Point(425, 65),
-                Size = new Size(191, 32),
-                BackColor = Color.FromArgb(34, 197, 94),
+                Location = new Point(436, 230),
+                Size = new Size(200, 35),
+                BackColor = Color.FromArgb(245, 158, 11),
                 ForeColor = Color.White,
-                Font = new Font("Segoe UI", 9.5f, FontStyle.Bold),
                 FlatStyle = FlatStyle.Flat
             };
-            btnLaunch.FlatAppearance.BorderSize = 0;
             btnLaunch.Click += BtnLaunch_Click;
-            gbAuth.Controls.Add(btnLaunch);
+            this.Controls.Add(btnLaunch);
 
-            this.Controls.Add(gbAuth);
-
-            // Status Badge
+            // Status label
             lblStatus = new Label
             {
-                Text = "Status: Ready for authentication.",
-                Location = new Point(26, 335),
+                Text = "Status: Ready - Web Auth + Master Bridge",
+                Location = new Point(24, 280),
                 AutoSize = true,
-                Font = new Font("Segoe UI", 10f, FontStyle.Bold),
-                ForeColor = Color.FromArgb(203, 213, 225)
+                ForeColor = Color.White
             };
             this.Controls.Add(lblStatus);
 
-            // Log Console
+            // Info about hosts file
+            Label lblHostsInfo = new Label
+            {
+                Text = "⚠️ Add to C:\\Windows\\System32\\drivers\\etc\\hosts: 127.0.0.1 m.lfspro.net",
+                Location = new Point(24, 305),
+                AutoSize = true,
+                ForeColor = Color.FromArgb(252, 211, 77)
+            };
+            this.Controls.Add(lblHostsInfo);
+
+            // Logs
             txtLogs = new TextBox
             {
-                Location = new Point(24, 365),
-                Size = new Size(636, 175),
+                Location = new Point(24, 330),
+                Size = new Size(632, 220),
                 Multiline = true,
-                ReadOnly = true,
                 ScrollBars = ScrollBars.Vertical,
-                BackColor = Color.FromArgb(11, 15, 25),
-                ForeColor = Color.FromArgb(56, 189, 248),
+                BackColor = Color.FromArgb(15, 23, 42),
+                ForeColor = Color.White,
                 Font = new Font("Consolas", 9f),
-                BorderStyle = BorderStyle.FixedSingle
+                BorderStyle = BorderStyle.FixedSingle,
+                ReadOnly = true
             };
             this.Controls.Add(txtLogs);
 
             Log("ProThailand Launcher initialized.");
-            Log("Active endpoint: " + txtServerUrl.Text);
-
-            // Start Local Master Bridge connected to Web System
-            LocalMasterBridge.Start(txtServerUrl.Text);
-            if (LocalMasterBridge.IsRunning)
-            {
-                Log("[+] Master Bridge Active on port 29339 -> All LFS usemaster checks sync to Web Portal!");
-            }
-            else
-            {
-                Log("[!] Warning: Master Bridge port 29339 already bound or busy.");
-            }
-
+            Log("Mode: Web Authentication + LFS Master Bridge");
             CheckLfsStatus();
-        }
-
-        private void ServerRadio_CheckedChanged(object sender, EventArgs e)
-        {
-            if (rbWorker.Checked)
-                txtServerUrl.Text = "https://prothailand-master-api.fixflxw24.workers.dev/api.php";
-            else if (rbLocalhost.Checked)
-                txtServerUrl.Text = LoginHandle.DefaultLocalServer;
-            else if (rbProThailand.Checked)
-                txtServerUrl.Text = LoginHandle.DefaultRemoteServer;
         }
 
         private void CheckLfsStatus()
@@ -269,10 +237,9 @@ namespace ProThailand
                 "• MAC Address:       {0}\n" +
                 "• Motherboard Serial: {1}\n" +
                 "• BIOS UUID:          {2}\n" +
-                "• Disk Model/Serial:  {3}\n" +
-                "• OS User / Machine:  {4} @ {5}\n\n" +
-                "=== UNENCRYPTED PAYLOAD (Sent to Master Server) ===\n{6}",
-                mac, mb, bios, hdd, Environment.UserName, Environment.MachineName, payload);
+                "• Disk Model/Serial:  {3}\n\n" +
+                "=== UNENCRYPTED PAYLOAD (Sent to Web Server) ===\n{4}",
+                mac, mb, bios, hdd, payload);
 
             Log("Inspected HWID: MAC=" + mac + ", MB=" + mb + ", BIOS=" + bios);
             MessageBox.Show(info, "Hardware Fingerprint Inspection", MessageBoxButtons.OK, MessageBoxIcon.Information);
@@ -282,33 +249,59 @@ namespace ProThailand
         {
             string user = txtUsername.Text.Trim();
             string pass = txtPassword.Text;
-            string serverUrl = txtServerUrl.Text.Trim();
+            string serverUrl = GetSelectedServerUrl();
 
-            lblStatus.Text = "Status: Authenticating with " + serverUrl + "...";
+            lblStatus.Text = "Status: Authenticating with Web Server...";
             lblStatus.ForeColor = Color.Yellow;
             btnLogin.Enabled = false;
+            btnLaunch.Enabled = false;
 
             ThreadPool.QueueUserWorkItem(state =>
             {
-                Log("Connecting to Master Server: " + serverUrl);
+                Log("Connecting to Web Auth Server: " + serverUrl);
                 var res = LoginHandle.DoLogin(user, pass, serverUrl);
 
                 this.Invoke((MethodInvoker)delegate
                 {
                     btnLogin.Enabled = true;
+                    
                     if (res.Success)
                     {
-                        lblStatus.Text = "Status: " + res.Message;
-                        lblStatus.ForeColor = Color.FromArgb(74, 222, 128); // Green
-                        Log("[+] SUCCESS: " + res.RawResponse);
+                        lblStatus.Text = "Status: " + res.Message + " - Starting Master Bridge";
+                        lblStatus.ForeColor = Color.FromArgb(74, 222, 128);
+                        Log("[+] SUCCESS: " + res.Message);
+                        Log("[+] User verified in ProThailand database");
+                        
+                        // Stop existing bridge if any
+                        if (LocalMasterBridge.IsRunning)
+                        {
+                            LocalMasterBridge.Stop();
+                            Thread.Sleep(200);
+                        }
+                        
+                        // Start Local Master Bridge
+                        try
+                        {
+                            LocalMasterBridge.Start(serverUrl);
+                            Log("[*] Local Master Bridge started on 127.0.0.1:29339");
+                            Log("[*] LFS will connect to m.lfspro.net -> 127.0.0.1:29339");
+                            Log("[*] Bridge will verify user: " + user);
+                            
+                            btnLaunch.Enabled = true;
+                            lblStatus.Text = "Status: Ready - Web Auth OK, Bridge Running";
+                        }
+                        catch (Exception ex)
+                        {
+                            Log("[-] Bridge failed: " + ex.Message);
+                            lblStatus.Text = "Status: Web Auth OK, Bridge Failed";
+                        }
                     }
                     else
                     {
                         lblStatus.Text = "Status: " + res.Message;
-                        lblStatus.ForeColor = Color.FromArgb(248, 113, 113); // Red
+                        lblStatus.ForeColor = Color.FromArgb(248, 113, 113);
                         Log("[-] FAILED (" + res.Status + "): " + res.Message);
-                        if (!string.IsNullOrEmpty(res.RawResponse))
-                            Log("    Server raw response: " + res.RawResponse);
+                        btnLaunch.Enabled = false;
                     }
                 });
             });
@@ -316,6 +309,13 @@ namespace ProThailand
 
         private void BtnLaunch_Click(object sender, EventArgs e)
         {
+            if (!LocalMasterBridge.IsRunning)
+            {
+                MessageBox.Show("Master Bridge not running. Please login first.",
+                    "Bridge Not Ready", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
             string lfsPath = LFSManager.FindLfsExecutable();
             if (string.IsNullOrEmpty(lfsPath))
             {
@@ -328,15 +328,29 @@ namespace ProThailand
             string pass = txtPassword.Text;
 
             Log("Starting LFS: " + lfsPath);
-            Log(string.Format("Injecting Web Credentials -> User: '{0}', usemaster=yes", string.IsNullOrEmpty(user) ? "guest" : user));
+            Log("[*] Web User: " + user);
+            Log("[*] Master Bridge: 127.0.0.1:29339 (m.lfspro.net)");
+            Log("[*] Injecting credentials into LFS memory...");
+            
             if (LFSManager.LaunchLfs(lfsPath, user, pass, "127.0.0.1"))
             {
-                Log("[+] LFS.exe process launched successfully with Web usemaster!");
+                Log("[+] LFS.exe launched with credentials injected");
+                Log("[+] LFS will connect to local bridge -> Web Auth Server");
             }
             else
             {
-                Log("[-] Failed to launch LFS.exe process.");
+                Log("[-] Failed to launch LFS.exe");
             }
+        }
+
+        private string GetSelectedServerUrl()
+        {
+            if (rbProThailand.Checked)
+                return "https://prothailand.net/api.php";
+            else if (rbLocalhost.Checked)
+                return "http://localhost:8080/api.php";
+            else // rbWorker.Checked
+                return "https://prothailand-master-api.fixflxw24.workers.dev/api.php";
         }
 
         public void Log(string msg)
