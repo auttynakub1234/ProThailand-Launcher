@@ -11,7 +11,7 @@ namespace ProThailand
     {
         private static TcpListener _listener;
         private static bool _isRunning = false;
-        private static string _webApiUrl = "https://prothailand-master-api.fixflxw24.workers.dev/api/user";
+        private static string _webApiUrl = "https://prothailand-master-api.fixflxw24.workers.dev/api/master/auth";
         private static string _activeUsername = "Pilot01";
 
         public static bool IsRunning
@@ -44,7 +44,7 @@ namespace ProThailand
                 string baseClean = webApiBase.TrimEnd('/');
                 if (baseClean.EndsWith("/api.php"))
                     baseClean = baseClean.Substring(0, baseClean.Length - 8);
-                _webApiUrl = baseClean + "/api/user";
+                _webApiUrl = baseClean + "/api/master/auth";
             }
 
             try
@@ -207,7 +207,7 @@ namespace ProThailand
                 using (StreamReader r = new StreamReader(s))
                 {
                     string json = r.ReadToEnd();
-                    return json.Contains("\"found\":true");
+                    return json.Contains("\"authorized\":true") || json.Contains("\"found\":true");
                 }
             }
             catch
