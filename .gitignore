@@ -8,5 +8,7 @@ ProThailand-Pack/
 github-repo/
 *.obj
 *.pdb
+TestLauncher.exe
+*.backup
 bin/
 obj/
