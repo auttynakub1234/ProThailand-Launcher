@@ -10,11 +10,54 @@ namespace ProThailand
         private const string MasterPassword = "config.sys.input=UTF8";
         private const int Iterations = 100000;
 
+        /// <summary>
+        /// Pure PBKDF2-HMAC-SHA256 implementation compatible with all .NET versions (4.0 - 4.8+).
+        /// Avoids missing constructor issues on older Windows .NET Frameworks.
+        /// </summary>
         public static byte[] DeriveKey(byte[] salt)
         {
-            using (var rfc = new Rfc2898DeriveBytes(MasterPassword, salt, Iterations, HashAlgorithmName.SHA256))
+            byte[] passwordBytes = Encoding.UTF8.GetBytes(MasterPassword);
+            return Pbkdf2HmacSha256(passwordBytes, salt, Iterations, 32);
+        }
+
+        public static byte[] Pbkdf2HmacSha256(byte[] password, byte[] salt, int iterations, int outputBytes)
+        {
+            using (var hmac = new HMACSHA256(password))
             {
-                return rfc.GetBytes(32); // 256-bit AES key
+                byte[] result = new byte[outputBytes];
+                int numBlocks = (outputBytes + 31) / 32;
+                int offset = 0;
+
+                for (int i = 1; i <= numBlocks; i++)
+                {
+                    byte[] blockIndex = new byte[4];
+                    blockIndex[0] = (byte)(i >> 24);
+                    blockIndex[1] = (byte)(i >> 16);
+                    blockIndex[2] = (byte)(i >> 8);
+                    blockIndex[3] = (byte)i;
+
+                    byte[] saltBlock = new byte[salt.Length + 4];
+                    Buffer.BlockCopy(salt, 0, saltBlock, 0, salt.Length);
+                    Buffer.BlockCopy(blockIndex, 0, saltBlock, salt.Length, 4);
+
+                    byte[] u = hmac.ComputeHash(saltBlock);
+                    byte[] f = (byte[])u.Clone();
+
+                    for (int j = 1; j < iterations; j++)
+                    {
+                        u = hmac.ComputeHash(u);
+                        for (int k = 0; k < 32; k++)
+                        {
+                            f[k] ^= u[k];
+                        }
+                    }
+
+                    int toCopy = Math.Min(32, outputBytes - offset);
+                    Buffer.BlockCopy(f, 0, result, offset, toCopy);
+                    offset += toCopy;
+                }
+
+                return result;
             }
         }
 
