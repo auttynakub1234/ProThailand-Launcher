@@ -63,6 +63,18 @@ namespace ProThailand
                         return res.Success ? 0 : 1;
                     }
 
+                    if (cmd == "--bridge" || cmd == "-b")
+                    {
+                        string user = (args.Length > 1) ? args[1] : "Pilot01";
+                        string server = (args.Length > 2) ? args[2] : LoginHandle.DefaultRemoteServer;
+                        LocalMasterBridge.OnLog += Console.WriteLine;
+                        LocalMasterBridge.Start(server, user);
+                        Console.WriteLine("[*] Bridge active for user: " + user + ". Press Enter or Ctrl+C to stop.");
+                        Console.ReadLine();
+                        LocalMasterBridge.Stop();
+                        return 0;
+                    }
+
                     if (cmd == "--help" || cmd == "-h")
                     {
                         Console.WriteLine("ProThailand Launcher (LFS 0.6V)");
@@ -70,6 +82,7 @@ namespace ProThailand
                         Console.WriteLine("  ProThailand.exe                 (Runs WinForms GUI)");
                         Console.WriteLine("  ProThailand.exe --inspect-hwid  (Displays Hardware Fingerprint)");
                         Console.WriteLine("  ProThailand.exe --login <user> <pass> [server_url]");
+                        Console.WriteLine("  ProThailand.exe --bridge [username] [server_url]");
                         return 0;
                     }
                 }

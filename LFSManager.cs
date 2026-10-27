@@ -8,15 +8,76 @@ namespace ProThailand
 {
     public static class LFSManager
     {
+        private static string _customLfsPath = null;
+        private static readonly string SettingsFile = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "prothailand.ini");
+
+        public static string CustomLfsPath
+        {
+            get
+            {
+                if (!string.IsNullOrEmpty(_customLfsPath))
+                    return _customLfsPath;
+
+                // Load from ini if saved
+                try
+                {
+                    if (File.Exists(SettingsFile))
+                    {
+                        string[] lines = File.ReadAllLines(SettingsFile);
+                        foreach (string line in lines)
+                        {
+                            if (line.StartsWith("LfsPath=") && line.Length > 8)
+                            {
+                                string p = line.Substring(8).Trim();
+                                if (File.Exists(p))
+                                {
+                                    _customLfsPath = p;
+                                    return _customLfsPath;
+                                }
+                            }
+                        }
+                    }
+                }
+                catch { }
+
+                return null;
+            }
+            set
+            {
+                _customLfsPath = value;
+                try
+                {
+                    File.WriteAllText(SettingsFile, "LfsPath=" + (value ?? ""));
+                }
+                catch { }
+            }
+        }
+
         public static string FindLfsExecutable()
         {
+            // 1. Check custom path first
+            string custom = CustomLfsPath;
+            if (!string.IsNullOrEmpty(custom) && File.Exists(custom))
+                return Path.GetFullPath(custom);
+
+            // 2. Candidate search locations
+            string baseDir = AppDomain.CurrentDomain.BaseDirectory;
             string[] candidatePaths = new string[]
             {
-                Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "LFS.exe"),
-                Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "..", "LFS.exe"),
-                "/sdcard/reverse-skill/work/newproject/LFS.exe",
+                Path.Combine(baseDir, "LFS.exe"),
+                Path.Combine(baseDir, "..", "LFS.exe"),
+                Path.Combine(Directory.GetCurrentDirectory(), "LFS.exe"),
                 "C:\\LFS\\LFS.exe",
-                "C:\\Live for Speed\\LFS.exe"
+                "D:\\LFS\\LFS.exe",
+                "E:\\LFS\\LFS.exe",
+                "C:\\Live for Speed\\LFS.exe",
+                "D:\\Live for Speed\\LFS.exe",
+                "E:\\Live for Speed\\LFS.exe",
+                "C:\\Games\\LFS\\LFS.exe",
+                "D:\\Games\\LFS\\LFS.exe",
+                "C:\\Program Files\\LFS\\LFS.exe",
+                "C:\\Program Files (x86)\\LFS\\LFS.exe",
+                "/sdcard/reverse-skill/work/newproject/LFS.exe"
             };
 
             foreach (string p in candidatePaths)
@@ -24,7 +85,10 @@ namespace ProThailand
                 try
                 {
                     if (File.Exists(p))
-                        return Path.GetFullPath(p);
+                    {
+                        CustomLfsPath = Path.GetFullPath(p);
+                        return CustomLfsPath;
+                    }
                 }
                 catch { }
             }
@@ -54,7 +118,11 @@ namespace ProThailand
             {
                 string content = "";
                 if (File.Exists(cfgPath))
+                {
+                    // Remove read-only attribute if set
+                    File.SetAttributes(cfgPath, FileAttributes.Normal);
                     content = File.ReadAllText(cfgPath);
+                }
 
                 // Update or append user_name
                 if (Regex.IsMatch(content, @"(?m)^user_name\s+.*$"))
@@ -79,6 +147,26 @@ namespace ProThailand
             catch { }
         }
 
+        public static bool TryAddHostsEntry()
+        {
+            try
+            {
+                string hostsPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.System), @"drivers\etc\hosts");
+                if (File.Exists(hostsPath))
+                {
+                    string text = File.ReadAllText(hostsPath);
+                    if (!text.Contains("m.lfspro.net"))
+                    {
+                        File.AppendAllText(hostsPath, "\r\n127.0.0.1 m.lfspro.net\r\n");
+                        return true;
+                    }
+                    return true;
+                }
+            }
+            catch { }
+            return false;
+        }
+
         public static bool LaunchLfs(string lfsPath, string username = null, string password = null, string masterHost = null, string extraArgs = "")
         {
             if (string.IsNullOrEmpty(lfsPath) || !File.Exists(lfsPath))
@@ -89,42 +177,45 @@ namespace ProThailand
 
             string lfsDir = Path.GetDirectoryName(lfsPath);
 
-            // Update cfg.txt if credentials provided
+            // Update cfg.txt with credentials & usemaster
             if (!string.IsNullOrEmpty(username))
             {
                 UpdateLfsConfig(lfsDir, username, password ?? "");
             }
 
-            // Build launch arguments
-            string args = extraArgs ?? "";
-            if (!string.IsNullOrEmpty(username))
-            {
-                args += string.Format(" /user={0} /pass={1} /usemaster=yes", username.ToLower(), password ?? "");
-            }
+            // Attempt to ensure hosts entry
+            TryAddHostsEntry();
 
             try
             {
                 var psi = new ProcessStartInfo
                 {
                     FileName = lfsPath,
-                    Arguments = args.Trim(),
+                    Arguments = (extraArgs ?? "").Trim(),
                     WorkingDirectory = lfsDir,
                     UseShellExecute = true
                 };
 
                 Process proc = Process.Start(psi);
 
-                // Perform memory injection in background thread once process is initialized
+                // Multi-stage memory injection to beat any race condition
                 if (proc != null && !string.IsNullOrEmpty(username))
                 {
                     ThreadPool.QueueUserWorkItem(state =>
                     {
-                        try
+                        int[] delays = new int[] { 50, 150, 400, 800 };
+                        foreach (int delay in delays)
                         {
-                            Thread.Sleep(800); // Give LFS time to map PE sections
-                            LFSInjector.InjectCredentials(proc, username, password, masterHost);
+                            try
+                            {
+                                Thread.Sleep(delay);
+                                if (!proc.HasExited)
+                                {
+                                    LFSInjector.InjectCredentials(proc, username, password, masterHost ?? "127.0.0.1");
+                                }
+                            }
+                            catch { }
                         }
-                        catch { }
                     });
                 }
 

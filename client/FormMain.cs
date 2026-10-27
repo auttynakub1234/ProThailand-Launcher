@@ -2,6 +2,7 @@ using System;
 using System.Drawing;
 using System.Windows.Forms;
 using System.Threading;
+using System.IO;
 
 namespace ProThailand
 {
@@ -9,25 +10,34 @@ namespace ProThailand
     {
         private TextBox txtUsername;
         private TextBox txtPassword;
-        private TextBox txtServerUrl;
+        private TextBox txtLfsPath;
+        private Button btnBrowse;
         private RadioButton rbLocalhost;
         private RadioButton rbWorker;
         private RadioButton rbProThailand;
+        private Button btnQuickStart;
         private Button btnLogin;
         private Button btnInspectHwid;
-        private Button btnLaunch;
+        private Button btnFixHosts;
         private Label lblStatus;
         private TextBox txtLogs;
 
         public FormMain()
         {
             InitializeComponent();
+            LocalMasterBridge.OnLog += msg =>
+            {
+                if (this.IsHandleCreated)
+                {
+                    this.BeginInvoke((MethodInvoker)delegate { Log(msg); });
+                }
+            };
         }
 
         private void InitializeComponent()
         {
-            this.Text = "ProThailand Launcher (LFS 0.6V)";
-            this.Size = new Size(700, 600);
+            this.Text = "ProThailand Launcher (LFS 0.6V) — Auto Login & Master Bridge";
+            this.Size = new Size(740, 650);
             this.StartPosition = FormStartPosition.CenterScreen;
             this.BackColor = Color.FromArgb(24, 28, 36);
             this.ForeColor = Color.White;
@@ -39,34 +49,34 @@ namespace ProThailand
                 Text = "PROTHAILAND LAUNCHER",
                 Font = new Font("Segoe UI", 16f, FontStyle.Bold),
                 ForeColor = Color.FromArgb(56, 189, 248),
-                Location = new Point(24, 18),
+                Location = new Point(24, 16),
                 AutoSize = true
             };
             this.Controls.Add(lblTitle);
 
             Label lblSubtitle = new Label
             {
-                Text = "Live for Speed 0.6V - Web Authentication + Master Bridge",
+                Text = "Live for Speed 0.6V — One-Click Auto Login + Local Master Bridge (S3 License)",
                 Font = new Font("Segoe UI", 9f, FontStyle.Regular),
                 ForeColor = Color.FromArgb(148, 163, 184),
-                Location = new Point(26, 50),
+                Location = new Point(26, 48),
                 AutoSize = true
             };
             this.Controls.Add(lblSubtitle);
 
-            // Server selection
+            // Server selection GroupBox
             GroupBox gbServer = new GroupBox
             {
                 Text = " Web Authentication Server ",
-                Location = new Point(24, 80),
-                Size = new Size(636, 100),
+                Location = new Point(24, 75),
+                Size = new Size(676, 85),
                 ForeColor = Color.FromArgb(203, 213, 225)
             };
 
             rbWorker = new RadioButton
             {
                 Text = "Cloudflare Worker (prothailand-master-api.fixflxw24.workers.dev)",
-                Location = new Point(20, 24),
+                Location = new Point(16, 22),
                 AutoSize = true,
                 Checked = true,
                 ForeColor = Color.FromArgb(251, 146, 60)
@@ -76,7 +86,7 @@ namespace ProThailand
             rbLocalhost = new RadioButton
             {
                 Text = "Localhost Test Server (localhost:8080)",
-                Location = new Point(20, 48),
+                Location = new Point(16, 48),
                 AutoSize = true,
                 ForeColor = Color.FromArgb(74, 222, 128)
             };
@@ -85,7 +95,7 @@ namespace ProThailand
             rbProThailand = new RadioButton
             {
                 Text = "Production (prothailand.net)",
-                Location = new Point(20, 72),
+                Location = new Point(340, 48),
                 AutoSize = true,
                 ForeColor = Color.FromArgb(56, 189, 248)
             };
@@ -97,14 +107,14 @@ namespace ProThailand
             Label lblUser = new Label
             {
                 Text = "Username:",
-                Location = new Point(24, 190),
+                Location = new Point(24, 172),
                 AutoSize = true
             };
             this.Controls.Add(lblUser);
 
             txtUsername = new TextBox
             {
-                Location = new Point(100, 187),
+                Location = new Point(100, 169),
                 Size = new Size(200, 24),
                 BackColor = Color.FromArgb(15, 23, 42),
                 ForeColor = Color.White,
@@ -117,14 +127,14 @@ namespace ProThailand
             Label lblPass = new Label
             {
                 Text = "Password:",
-                Location = new Point(320, 190),
+                Location = new Point(320, 172),
                 AutoSize = true
             };
             this.Controls.Add(lblPass);
 
             txtPassword = new TextBox
             {
-                Location = new Point(400, 187),
+                Location = new Point(400, 169),
                 Size = new Size(200, 24),
                 BackColor = Color.FromArgb(15, 23, 42),
                 ForeColor = Color.White,
@@ -134,68 +144,117 @@ namespace ProThailand
             };
             this.Controls.Add(txtPassword);
 
-            // Buttons
-            btnInspectHwid = new Button
+            // LFS.exe Path row
+            Label lblLfs = new Label
             {
-                Text = "🔍 Inspect HWID",
-                Location = new Point(24, 230),
-                Size = new Size(180, 35),
-                BackColor = Color.FromArgb(59, 130, 246),
+                Text = "LFS Path:",
+                Location = new Point(24, 206),
+                AutoSize = true
+            };
+            this.Controls.Add(lblLfs);
+
+            txtLfsPath = new TextBox
+            {
+                Location = new Point(100, 203),
+                Size = new Size(480, 24),
+                BackColor = Color.FromArgb(15, 23, 42),
+                ForeColor = Color.White,
+                BorderStyle = BorderStyle.FixedSingle,
+                ReadOnly = false
+            };
+            this.Controls.Add(txtLfsPath);
+
+            btnBrowse = new Button
+            {
+                Text = "📁 Browse...",
+                Location = new Point(590, 202),
+                Size = new Size(110, 26),
+                BackColor = Color.FromArgb(51, 65, 85),
                 ForeColor = Color.White,
                 FlatStyle = FlatStyle.Flat
             };
-            btnInspectHwid.Click += BtnInspectHwid_Click;
-            this.Controls.Add(btnInspectHwid);
+            btnBrowse.Click += BtnBrowse_Click;
+            this.Controls.Add(btnBrowse);
+
+            // Action Buttons
+            btnQuickStart = new Button
+            {
+                Text = "🏁 เริ่มเกม LFS ทันที (Auto Login & Launch)",
+                Font = new Font("Segoe UI", 10.5f, FontStyle.Bold),
+                Location = new Point(24, 242),
+                Size = new Size(390, 42),
+                BackColor = Color.FromArgb(16, 185, 129),
+                ForeColor = Color.White,
+                FlatStyle = FlatStyle.Flat,
+                Cursor = Cursors.Hand
+            };
+            btnQuickStart.FlatAppearance.BorderSize = 0;
+            btnQuickStart.Click += BtnQuickStart_Click;
+            this.Controls.Add(btnQuickStart);
 
             btnLogin = new Button
             {
-                Text = "🚀 Login & Start Bridge",
-                Location = new Point(220, 230),
-                Size = new Size(200, 35),
-                BackColor = Color.FromArgb(16, 185, 129),
+                Text = "🚀 Login Web Only",
+                Location = new Point(424, 242),
+                Size = new Size(155, 42),
+                BackColor = Color.FromArgb(59, 130, 246),
                 ForeColor = Color.White,
                 FlatStyle = FlatStyle.Flat
             };
             btnLogin.Click += BtnLogin_Click;
             this.Controls.Add(btnLogin);
 
-            btnLaunch = new Button
+            btnInspectHwid = new Button
             {
-                Text = "🏁 Launch LFS.exe",
-                Location = new Point(436, 230),
-                Size = new Size(200, 35),
-                BackColor = Color.FromArgb(245, 158, 11),
+                Text = "🔍 HWID",
+                Location = new Point(590, 242),
+                Size = new Size(110, 42),
+                BackColor = Color.FromArgb(71, 85, 105),
                 ForeColor = Color.White,
                 FlatStyle = FlatStyle.Flat
             };
-            btnLaunch.Click += BtnLaunch_Click;
-            this.Controls.Add(btnLaunch);
+            btnInspectHwid.Click += BtnInspectHwid_Click;
+            this.Controls.Add(btnInspectHwid);
 
-            // Status label
+            // Status label & Hosts button
             lblStatus = new Label
             {
-                Text = "Status: Ready - Web Auth + Master Bridge",
-                Location = new Point(24, 280),
+                Text = "Status: พร้อมใช้งาน (Ready) — กดปุ่มเริ่มเกมเพื่อเข้าเล่นได้ทันที",
+                Location = new Point(24, 298),
                 AutoSize = true,
-                ForeColor = Color.White
+                ForeColor = Color.FromArgb(74, 222, 128)
             };
             this.Controls.Add(lblStatus);
 
-            // Info about hosts file
-            Label lblHostsInfo = new Label
+            btnFixHosts = new Button
             {
-                Text = "⚠️ Add to C:\\Windows\\System32\\drivers\\etc\\hosts: 127.0.0.1 m.lfspro.net",
-                Location = new Point(24, 305),
-                AutoSize = true,
-                ForeColor = Color.FromArgb(252, 211, 77)
+                Text = "🛠️ Auto Hosts",
+                Location = new Point(590, 293),
+                Size = new Size(110, 25),
+                BackColor = Color.FromArgb(30, 41, 59),
+                ForeColor = Color.FromArgb(203, 213, 225),
+                FlatStyle = FlatStyle.Flat
             };
-            this.Controls.Add(lblHostsInfo);
+            btnFixHosts.Click += (s, e) =>
+            {
+                if (LFSManager.TryAddHostsEntry())
+                {
+                    Log("[+] Hosts file checked: 127.0.0.1 m.lfspro.net is configured.");
+                    MessageBox.Show("บันทึกการตั้งค่า Hosts file สำเร็จ!", "Hosts Config", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                }
+                else
+                {
+                    Log("[!] Could not edit hosts file automatically (Run launcher as Administrator if needed).");
+                    MessageBox.Show("ไม่สามารถแก้ไข hosts file ได้โดยอัตโนมัติ (กรุณาคลิกขวาแล้ว Run as Administrator หรือเพิ่มบรรทัด: 127.0.0.1 m.lfspro.net ด้วยตนเอง)", "Hosts Config", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                }
+            };
+            this.Controls.Add(btnFixHosts);
 
-            // Logs
+            // Logs text box
             txtLogs = new TextBox
             {
-                Location = new Point(24, 330),
-                Size = new Size(632, 220),
+                Location = new Point(24, 328),
+                Size = new Size(676, 260),
                 Multiline = true,
                 ScrollBars = ScrollBars.Vertical,
                 BackColor = Color.FromArgb(15, 23, 42),
@@ -207,21 +266,153 @@ namespace ProThailand
             this.Controls.Add(txtLogs);
 
             Log("ProThailand Launcher initialized.");
-            Log("Mode: Web Authentication + LFS Master Bridge");
-            CheckLfsStatus();
-        }
+            Log("Mode: One-Click Quick Start (Auto Login + Local Master Bridge)");
 
-        private void CheckLfsStatus()
-        {
-            string lfsPath = LFSManager.FindLfsExecutable();
-            if (!string.IsNullOrEmpty(lfsPath))
+            // Auto-detect LFS path
+            string detectedLfs = LFSManager.FindLfsExecutable();
+            if (!string.IsNullOrEmpty(detectedLfs))
             {
-                Log("Detected LFS.exe at: " + lfsPath);
+                txtLfsPath.Text = detectedLfs;
+                Log("Detected LFS.exe at: " + detectedLfs);
             }
             else
             {
-                Log("Warning: LFS.exe not detected in search paths.");
+                Log("Notice: LFS.exe not automatically found. Please click 'Browse' to select your LFS.exe");
             }
+        }
+
+        private void BtnBrowse_Click(object sender, EventArgs e)
+        {
+            using (OpenFileDialog ofd = new OpenFileDialog())
+            {
+                ofd.Title = "เลือกไฟล์เกม LFS.exe";
+                ofd.Filter = "LFS Executable (LFS.exe)|LFS.exe|All Executables (*.exe)|*.exe";
+                if (ofd.ShowDialog() == DialogResult.OK)
+                {
+                    txtLfsPath.Text = ofd.FileName;
+                    LFSManager.CustomLfsPath = ofd.FileName;
+                    Log("[+] Selected LFS path: " + ofd.FileName);
+                }
+            }
+        }
+
+        private void BtnQuickStart_Click(object sender, EventArgs e)
+        {
+            string lfsPath = txtLfsPath.Text.Trim();
+            if (string.IsNullOrEmpty(lfsPath) || !File.Exists(lfsPath))
+            {
+                lfsPath = LFSManager.FindLfsExecutable();
+                if (!string.IsNullOrEmpty(lfsPath))
+                    txtLfsPath.Text = lfsPath;
+            }
+
+            if (string.IsNullOrEmpty(lfsPath) || !File.Exists(lfsPath))
+            {
+                MessageBox.Show("ไม่พบไฟล์ LFS.exe กรุณากดปุ่ม 'Browse...' เพื่อเลือกตำแหน่งของตัวเกม LFS.exe บนเครื่องของคุณ",
+                    "ไม่พบไฟล์ LFS.exe", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                BtnBrowse_Click(sender, e);
+                return;
+            }
+
+            string user = txtUsername.Text.Trim();
+            string pass = txtPassword.Text;
+            if (string.IsNullOrEmpty(user) || string.IsNullOrEmpty(pass))
+            {
+                MessageBox.Show("กรุณากรอก Username และ Password ให้ครบถ้วน", "ข้อผิดพลาด", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
+            string serverUrl = GetSelectedServerUrl();
+            lblStatus.Text = "Status: กำลังเชื่อมต่อ Master Bridge & เริ่มเกม LFS...";
+            lblStatus.ForeColor = Color.Yellow;
+            btnQuickStart.Enabled = false;
+
+            // 1. Ensure Local Master Bridge is running with active user
+            try
+            {
+                LocalMasterBridge.ActiveUsername = user;
+                if (!LocalMasterBridge.IsRunning)
+                {
+                    LocalMasterBridge.Start(serverUrl, user);
+                    Log("[*] Local Master Bridge started on 127.0.0.1:29339");
+                }
+            }
+            catch (Exception ex)
+            {
+                Log("[-] Bridge Start Warning: " + ex.Message);
+            }
+
+            // 2. Perform authentication and launch in background thread
+            ThreadPool.QueueUserWorkItem(state =>
+            {
+                Log("Authenticating user '" + user + "' with Web Server...");
+                var loginRes = LoginHandle.DoLogin(user, pass, serverUrl);
+
+                if (loginRes.Success)
+                {
+                    Log("[+] Web Auth: " + loginRes.Message);
+                }
+                else
+                {
+                    Log("[!] Web Auth Notice (" + loginRes.Status + "): " + loginRes.Message);
+                    Log("[*] Proceeding with Local Master Bridge active session for '" + user + "'");
+                }
+
+                Log("[*] Launching LFS.exe: " + lfsPath);
+                bool launched = LFSManager.LaunchLfs(lfsPath, user, pass, "127.0.0.1");
+
+                this.BeginInvoke((MethodInvoker)delegate
+                {
+                    btnQuickStart.Enabled = true;
+                    if (launched)
+                    {
+                        lblStatus.Text = "Status: ตัวเกม LFS เปิดแล้ว! (กำลังเชื่อมต่อไปยัง Master Bridge)";
+                        lblStatus.ForeColor = Color.FromArgb(74, 222, 128);
+                        Log("[+] SUCCESS: LFS.exe launched successfully with credentials injected.");
+                    }
+                    else
+                    {
+                        lblStatus.Text = "Status: ไม่สามารถเปิด LFS.exe ได้";
+                        lblStatus.ForeColor = Color.FromArgb(248, 113, 113);
+                        Log("[-] FAILED: Could not start LFS.exe. Please verify path and permissions.");
+                    }
+                });
+            });
+        }
+
+        private void BtnLogin_Click(object sender, EventArgs e)
+        {
+            string user = txtUsername.Text.Trim();
+            string pass = txtPassword.Text;
+            string serverUrl = GetSelectedServerUrl();
+
+            lblStatus.Text = "Status: Authenticating with Web Server...";
+            lblStatus.ForeColor = Color.Yellow;
+            btnLogin.Enabled = false;
+
+            ThreadPool.QueueUserWorkItem(state =>
+            {
+                Log("Connecting to Web Auth Server: " + serverUrl);
+                var res = LoginHandle.DoLogin(user, pass, serverUrl);
+
+                this.BeginInvoke((MethodInvoker)delegate
+                {
+                    btnLogin.Enabled = true;
+                    if (res.Success)
+                    {
+                        lblStatus.Text = "Status: " + res.Message;
+                        lblStatus.ForeColor = Color.FromArgb(74, 222, 128);
+                        Log("[+] SUCCESS: " + res.Message);
+                        LocalMasterBridge.Start(serverUrl, user);
+                    }
+                    else
+                    {
+                        lblStatus.Text = "Status: " + res.Message;
+                        lblStatus.ForeColor = Color.FromArgb(248, 113, 113);
+                        Log("[-] FAILED (" + res.Status + "): " + res.Message);
+                    }
+                });
+            });
         }
 
         private void BtnInspectHwid_Click(object sender, EventArgs e)
@@ -243,104 +434,6 @@ namespace ProThailand
 
             Log("Inspected HWID: MAC=" + mac + ", MB=" + mb + ", BIOS=" + bios);
             MessageBox.Show(info, "Hardware Fingerprint Inspection", MessageBoxButtons.OK, MessageBoxIcon.Information);
-        }
-
-        private void BtnLogin_Click(object sender, EventArgs e)
-        {
-            string user = txtUsername.Text.Trim();
-            string pass = txtPassword.Text;
-            string serverUrl = GetSelectedServerUrl();
-
-            lblStatus.Text = "Status: Authenticating with Web Server...";
-            lblStatus.ForeColor = Color.Yellow;
-            btnLogin.Enabled = false;
-            btnLaunch.Enabled = false;
-
-            ThreadPool.QueueUserWorkItem(state =>
-            {
-                Log("Connecting to Web Auth Server: " + serverUrl);
-                var res = LoginHandle.DoLogin(user, pass, serverUrl);
-
-                this.Invoke((MethodInvoker)delegate
-                {
-                    btnLogin.Enabled = true;
-                    
-                    if (res.Success)
-                    {
-                        lblStatus.Text = "Status: " + res.Message + " - Starting Master Bridge";
-                        lblStatus.ForeColor = Color.FromArgb(74, 222, 128);
-                        Log("[+] SUCCESS: " + res.Message);
-                        Log("[+] User verified in ProThailand database");
-                        
-                        // Stop existing bridge if any
-                        if (LocalMasterBridge.IsRunning)
-                        {
-                            LocalMasterBridge.Stop();
-                            Thread.Sleep(200);
-                        }
-                        
-                        // Start Local Master Bridge
-                        try
-                        {
-                            LocalMasterBridge.Start(serverUrl);
-                            Log("[*] Local Master Bridge started on 127.0.0.1:29339");
-                            Log("[*] LFS will connect to m.lfspro.net -> 127.0.0.1:29339");
-                            Log("[*] Bridge will verify user: " + user);
-                            
-                            btnLaunch.Enabled = true;
-                            lblStatus.Text = "Status: Ready - Web Auth OK, Bridge Running";
-                        }
-                        catch (Exception ex)
-                        {
-                            Log("[-] Bridge failed: " + ex.Message);
-                            lblStatus.Text = "Status: Web Auth OK, Bridge Failed";
-                        }
-                    }
-                    else
-                    {
-                        lblStatus.Text = "Status: " + res.Message;
-                        lblStatus.ForeColor = Color.FromArgb(248, 113, 113);
-                        Log("[-] FAILED (" + res.Status + "): " + res.Message);
-                        btnLaunch.Enabled = false;
-                    }
-                });
-            });
-        }
-
-        private void BtnLaunch_Click(object sender, EventArgs e)
-        {
-            if (!LocalMasterBridge.IsRunning)
-            {
-                MessageBox.Show("Master Bridge not running. Please login first.",
-                    "Bridge Not Ready", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                return;
-            }
-
-            string lfsPath = LFSManager.FindLfsExecutable();
-            if (string.IsNullOrEmpty(lfsPath))
-            {
-                MessageBox.Show("Could not find LFS.exe in application directory or standard locations.",
-                    "LFS Not Found", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                return;
-            }
-
-            string user = txtUsername.Text.Trim();
-            string pass = txtPassword.Text;
-
-            Log("Starting LFS: " + lfsPath);
-            Log("[*] Web User: " + user);
-            Log("[*] Master Bridge: 127.0.0.1:29339 (m.lfspro.net)");
-            Log("[*] Injecting credentials into LFS memory...");
-            
-            if (LFSManager.LaunchLfs(lfsPath, user, pass, "127.0.0.1"))
-            {
-                Log("[+] LFS.exe launched with credentials injected");
-                Log("[+] LFS will connect to local bridge -> Web Auth Server");
-            }
-            else
-            {
-                Log("[-] Failed to launch LFS.exe");
-            }
         }
 
         private string GetSelectedServerUrl()
