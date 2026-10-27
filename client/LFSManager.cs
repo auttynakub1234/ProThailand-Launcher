@@ -9,7 +9,7 @@ namespace ProThailand
     public static class LFSManager
     {
         private static string _customLfsPath = null;
-        private static readonly string SettingsFile = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "prothailand.ini");
+        public static readonly string SettingsFile = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "prothailand.ini");
 
         public static string CustomLfsPath
         {
@@ -45,12 +45,45 @@ namespace ProThailand
             set
             {
                 _customLfsPath = value;
-                try
-                {
-                    File.WriteAllText(SettingsFile, "LfsPath=" + (value ?? ""));
-                }
-                catch { }
+                SaveSetting("LfsPath", value ?? "");
             }
+        }
+
+        public static string GetSetting(string key, string defaultValue = "")
+        {
+            try
+            {
+                if (File.Exists(SettingsFile))
+                {
+                    string[] lines = File.ReadAllLines(SettingsFile);
+                    foreach (string line in lines)
+                    {
+                        if (line.StartsWith(key + "="))
+                            return line.Substring(key.Length + 1).Trim();
+                    }
+                }
+            }
+            catch { }
+            return defaultValue;
+        }
+
+        public static void SaveSetting(string key, string value)
+        {
+            try
+            {
+                string content = "";
+                if (File.Exists(SettingsFile))
+                    content = File.ReadAllText(SettingsFile);
+
+                string pattern = @"(?m)^" + Regex.Escape(key) + @"=.*$";
+                if (Regex.IsMatch(content, pattern))
+                    content = Regex.Replace(content, pattern, key + "=" + value);
+                else
+                    content = content.TrimEnd() + "\r\n" + key + "=" + value + "\r\n";
+
+                File.WriteAllText(SettingsFile, content.Trim() + "\r\n");
+            }
+            catch { }
         }
 
         public static string FindLfsExecutable()
@@ -167,13 +200,13 @@ namespace ProThailand
             return false;
         }
 
-        public static bool LaunchLfs(string lfsPath, string username = null, string password = null, string masterHost = null, string extraArgs = "")
+        public static Process LaunchLfsProcess(string lfsPath, string username = null, string password = null, string masterHost = null, string extraArgs = "")
         {
             if (string.IsNullOrEmpty(lfsPath) || !File.Exists(lfsPath))
                 lfsPath = FindLfsExecutable();
 
             if (string.IsNullOrEmpty(lfsPath) || !File.Exists(lfsPath))
-                return false;
+                return null;
 
             string lfsDir = Path.GetDirectoryName(lfsPath);
 
@@ -219,12 +252,17 @@ namespace ProThailand
                     });
                 }
 
-                return true;
+                return proc;
             }
             catch
             {
-                return false;
+                return null;
             }
+        }
+
+        public static bool LaunchLfs(string lfsPath, string username = null, string password = null, string masterHost = null, string extraArgs = "")
+        {
+            return LaunchLfsProcess(lfsPath, username, password, masterHost, extraArgs) != null;
         }
     }
 }

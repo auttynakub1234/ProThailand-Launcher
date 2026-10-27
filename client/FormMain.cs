@@ -3,6 +3,7 @@ using System.Drawing;
 using System.Windows.Forms;
 using System.Threading;
 using System.IO;
+using System.Diagnostics;
 
 namespace ProThailand
 {
@@ -19,8 +20,11 @@ namespace ProThailand
         private Button btnLogin;
         private Button btnInspectHwid;
         private Button btnFixHosts;
+        private CheckBox chkAutoLaunch;
         private Label lblStatus;
         private TextBox txtLogs;
+        private System.Windows.Forms.Timer tmrAutoStart;
+        private int autoStartCountdown = 3;
 
         public FormMain()
         {
@@ -37,7 +41,7 @@ namespace ProThailand
         private void InitializeComponent()
         {
             this.Text = "ProThailand Launcher (LFS 0.6V) — Auto Login & Master Bridge";
-            this.Size = new Size(740, 650);
+            this.Size = new Size(740, 660);
             this.StartPosition = FormStartPosition.CenterScreen;
             this.BackColor = Color.FromArgb(24, 28, 36);
             this.ForeColor = Color.White;
@@ -119,7 +123,7 @@ namespace ProThailand
                 BackColor = Color.FromArgb(15, 23, 42),
                 ForeColor = Color.White,
                 BorderStyle = BorderStyle.FixedSingle,
-                Text = "Pilot01"
+                Text = LFSManager.GetSetting("Username", "Pilot01")
             };
             this.Controls.Add(txtUsername);
 
@@ -140,7 +144,7 @@ namespace ProThailand
                 ForeColor = Color.White,
                 BorderStyle = BorderStyle.FixedSingle,
                 PasswordChar = '*',
-                Text = "123456"
+                Text = LFSManager.GetSetting("Password", "123456")
             };
             this.Controls.Add(txtPassword);
 
@@ -216,11 +220,32 @@ namespace ProThailand
             btnInspectHwid.Click += BtnInspectHwid_Click;
             this.Controls.Add(btnInspectHwid);
 
+            // Auto-launch checkbox
+            chkAutoLaunch = new CheckBox
+            {
+                Text = "⚡ เริ่มเกมอัตโนมัติทันทีเมื่อเปิด Launcher (เปิดไฟล์เดียวเข้าเกมเลย)",
+                Location = new Point(26, 294),
+                AutoSize = true,
+                ForeColor = Color.FromArgb(203, 213, 225),
+                Checked = (LFSManager.GetSetting("AutoLaunch", "0") == "1")
+            };
+            chkAutoLaunch.CheckedChanged += (s, e) =>
+            {
+                LFSManager.SaveSetting("AutoLaunch", chkAutoLaunch.Checked ? "1" : "0");
+                if (!chkAutoLaunch.Checked && tmrAutoStart != null)
+                {
+                    tmrAutoStart.Stop();
+                    lblStatus.Text = "Status: พร้อมใช้งาน (ยกเลิกการเริ่มอัตโนมัติแล้ว)";
+                    lblStatus.ForeColor = Color.FromArgb(74, 222, 128);
+                }
+            };
+            this.Controls.Add(chkAutoLaunch);
+
             // Status label & Hosts button
             lblStatus = new Label
             {
                 Text = "Status: พร้อมใช้งาน (Ready) — กดปุ่มเริ่มเกมเพื่อเข้าเล่นได้ทันที",
-                Location = new Point(24, 298),
+                Location = new Point(24, 322),
                 AutoSize = true,
                 ForeColor = Color.FromArgb(74, 222, 128)
             };
@@ -229,7 +254,7 @@ namespace ProThailand
             btnFixHosts = new Button
             {
                 Text = "🛠️ Auto Hosts",
-                Location = new Point(590, 293),
+                Location = new Point(590, 317),
                 Size = new Size(110, 25),
                 BackColor = Color.FromArgb(30, 41, 59),
                 ForeColor = Color.FromArgb(203, 213, 225),
@@ -253,8 +278,8 @@ namespace ProThailand
             // Logs text box
             txtLogs = new TextBox
             {
-                Location = new Point(24, 328),
-                Size = new Size(676, 260),
+                Location = new Point(24, 348),
+                Size = new Size(676, 250),
                 Multiline = true,
                 ScrollBars = ScrollBars.Vertical,
                 BackColor = Color.FromArgb(15, 23, 42),
@@ -279,10 +304,37 @@ namespace ProThailand
             {
                 Log("Notice: LFS.exe not automatically found. Please click 'Browse' to select your LFS.exe");
             }
+
+            // If auto-launch is enabled, start countdown
+            if (chkAutoLaunch.Checked && !string.IsNullOrEmpty(txtLfsPath.Text) && File.Exists(txtLfsPath.Text))
+            {
+                autoStartCountdown = 2;
+                lblStatus.Text = string.Format("Status: กำลังเริ่มเกมอัตโนมัติใน {0} วินาที... (คลิกยกเลิกได้ที่ช่องสี่เหลี่ยม)", autoStartCountdown);
+                lblStatus.ForeColor = Color.FromArgb(251, 146, 60);
+
+                tmrAutoStart = new System.Windows.Forms.Timer();
+                tmrAutoStart.Interval = 1000;
+                tmrAutoStart.Tick += (s, e) =>
+                {
+                    autoStartCountdown--;
+                    if (autoStartCountdown > 0)
+                    {
+                        lblStatus.Text = string.Format("Status: กำลังเริ่มเกมอัตโนมัติใน {0} วินาที... (คลิกยกเลิกได้ที่ช่องสี่เหลี่ยม)", autoStartCountdown);
+                    }
+                    else
+                    {
+                        tmrAutoStart.Stop();
+                        BtnQuickStart_Click(null, null);
+                    }
+                };
+                tmrAutoStart.Start();
+            }
         }
 
         private void BtnBrowse_Click(object sender, EventArgs e)
         {
+            if (tmrAutoStart != null) tmrAutoStart.Stop();
+
             using (OpenFileDialog ofd = new OpenFileDialog())
             {
                 ofd.Title = "เลือกไฟล์เกม LFS.exe";
@@ -298,6 +350,8 @@ namespace ProThailand
 
         private void BtnQuickStart_Click(object sender, EventArgs e)
         {
+            if (tmrAutoStart != null) tmrAutoStart.Stop();
+
             string lfsPath = txtLfsPath.Text.Trim();
             if (string.IsNullOrEmpty(lfsPath) || !File.Exists(lfsPath))
             {
@@ -321,6 +375,10 @@ namespace ProThailand
                 MessageBox.Show("กรุณากรอก Username และ Password ให้ครบถ้วน", "ข้อผิดพลาด", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
+
+            // Save credentials
+            LFSManager.SaveSetting("Username", user);
+            LFSManager.SaveSetting("Password", pass);
 
             string serverUrl = GetSelectedServerUrl();
             lblStatus.Text = "Status: กำลังเชื่อมต่อ Master Bridge & เริ่มเกม LFS...";
@@ -359,16 +417,33 @@ namespace ProThailand
                 }
 
                 Log("[*] Launching LFS.exe: " + lfsPath);
-                bool launched = LFSManager.LaunchLfs(lfsPath, user, pass, "127.0.0.1");
+                Process proc = LFSManager.LaunchLfsProcess(lfsPath, user, pass, "127.0.0.1");
 
                 this.BeginInvoke((MethodInvoker)delegate
                 {
                     btnQuickStart.Enabled = true;
-                    if (launched)
+                    if (proc != null)
                     {
                         lblStatus.Text = "Status: ตัวเกม LFS เปิดแล้ว! (กำลังเชื่อมต่อไปยัง Master Bridge)";
                         lblStatus.ForeColor = Color.FromArgb(74, 222, 128);
                         Log("[+] SUCCESS: LFS.exe launched successfully with credentials injected.");
+
+                        // If auto-launch enabled, minimize launcher and exit when LFS quits
+                        if (chkAutoLaunch.Checked)
+                        {
+                            this.WindowState = FormWindowState.Minimized;
+                            ThreadPool.QueueUserWorkItem(w =>
+                            {
+                                try
+                                {
+                                    proc.WaitForExit();
+                                    Thread.Sleep(300);
+                                    LocalMasterBridge.Stop();
+                                    Application.Exit();
+                                }
+                                catch { }
+                            });
+                        }
                     }
                     else
                     {
@@ -382,6 +457,8 @@ namespace ProThailand
 
         private void BtnLogin_Click(object sender, EventArgs e)
         {
+            if (tmrAutoStart != null) tmrAutoStart.Stop();
+
             string user = txtUsername.Text.Trim();
             string pass = txtPassword.Text;
             string serverUrl = GetSelectedServerUrl();
@@ -417,6 +494,8 @@ namespace ProThailand
 
         private void BtnInspectHwid_Click(object sender, EventArgs e)
         {
+            if (tmrAutoStart != null) tmrAutoStart.Stop();
+
             string mac = HardwareInfo.GetMacAddress();
             string mb = HardwareInfo.GetMotherboardSerial();
             string bios = HardwareInfo.GetBiosUuid();

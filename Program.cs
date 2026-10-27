@@ -1,6 +1,7 @@
 using System;
 using System.Net;
 using System.Windows.Forms;
+using System.Diagnostics;
 
 namespace ProThailand
 {
@@ -32,6 +33,28 @@ namespace ProThailand
                 if (args != null && args.Length > 0)
                 {
                     string cmd = args[0].ToLower();
+
+                    if (cmd == "--auto" || cmd == "-a")
+                    {
+                        string user = LFSManager.GetSetting("Username", "Pilot01");
+                        string pass = LFSManager.GetSetting("Password", "123456");
+                        string lfsPath = LFSManager.FindLfsExecutable();
+
+                        if (string.IsNullOrEmpty(lfsPath))
+                        {
+                            MessageBox.Show("Could not locate LFS.exe. Please run ProThailand.exe normally once to set your game path.", "LFS Not Found", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                            return 1;
+                        }
+
+                        LocalMasterBridge.Start(LoginHandle.DefaultRemoteServer, user);
+                        Process proc = LFSManager.LaunchLfsProcess(lfsPath, user, pass, "127.0.0.1");
+                        if (proc != null)
+                        {
+                            proc.WaitForExit();
+                        }
+                        LocalMasterBridge.Stop();
+                        return 0;
+                    }
 
                     if (cmd == "--inspect-hwid" || cmd == "-i")
                     {
